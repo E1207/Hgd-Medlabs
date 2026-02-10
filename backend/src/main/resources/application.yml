@@ -4,8 +4,8 @@ spring:
   
   datasource:
     url: jdbc:postgresql://localhost:5432/medlab
-    username: ${DB_USERNAME:medlab_user}
-    password: ${DB_PASSWORD:medlab_password}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -23,8 +23,8 @@ spring:
   mail:
     host: ${EMAIL_HOST:smtp.gmail.com}
     port: ${EMAIL_PORT:587}
-    username: ${EMAIL_USERNAME:gabrielpondi07@gmail.com}
-    password: ${EMAIL_PASSWORD:xjirltnzwjvopenn}
+    username: ${EMAIL_USERNAME:}
+    password: ${EMAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -66,18 +66,27 @@ medlab:
     archive-enabled: ${ARCHIVE_ENABLED:false}
   
   security:
-    jwt-secret: ${JWT_SECRET:6YVvjGtLIDQMQysmNuP/fJVBWRKn79ndU+Ipxrz/uzw=}
+    jwt-secret: ${JWT_SECRET:}
     jwt-expiration: 86400000 # 24 heures en millisecondes
     access-code-length: 8
     max-access-attempts: 5
-    # Clé de chiffrement AES-256 pour les PDFs (OBLIGATOIRE: changer en production!)
+    # Clé de chiffrement AES-256 pour les PDFs (OBLIGATOIRE en production!)
     # Minimum 32 caractères pour une sécurité optimale
-    encryption-key: ${ENCRYPTION_KEY:MedLab_HGD_AES256_Key_Change_Me!}
+    encryption-key: ${ENCRYPTION_KEY:}
   
   email:
-    from: ${EMAIL_FROM:gabrielpondi07@gmail.com}
+    from: ${EMAIL_FROM:}
     from-name: MedLab - HGD
     base-url: ${BASE_URL:http://localhost:4200}
+  
+  # Configuration WhatsApp Business API (Meta Cloud)
+  # IMPORTANT: Les credentials doivent être dans les variables d'environnement !
+  whatsapp:
+    enabled: ${WHATSAPP_ENABLED:false}  # Désactivé par défaut, activer via env var
+    api-url: https://graph.facebook.com/v18.0
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
+    otp-validity-minutes: 10  # Durée de validité du code OTP
   
   scheduler:
     enabled: true

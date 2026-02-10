@@ -55,8 +55,8 @@ public class PatientResult {
     // ===== STOCKAGE PDF DANS POSTGRESQL =====
     // Le contenu binaire du PDF est stocké directement dans la base de données
     // Avantages: sécurité, intégrité, sauvegarde unique avec pg_dump
+    // Note: On n'utilise PAS @Lob car il utilise OID au lieu de BYTEA avec PostgreSQL
     
-    @Lob
     @Column(name = "pdf_content", columnDefinition = "BYTEA")
     private byte[] pdfContent;
     

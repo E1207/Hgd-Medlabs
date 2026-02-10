@@ -23,11 +23,12 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Copier les fichiers buildés depuis le stage précédent
 COPY --from=build /app/dist/medlab-app/browser /usr/share/nginx/html
 
-# Variables d'environnement
-ENV API_URL=http://backend:8080
+# Script pour injecter l'URL de l'API au démarrage
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Exposer le port 80
 EXPOSE 80
 
-# Script pour remplacer l'URL de l'API au démarrage
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

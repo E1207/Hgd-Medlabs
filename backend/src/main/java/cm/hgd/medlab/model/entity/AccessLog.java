@@ -45,4 +45,8 @@ public class AccessLog {
     @Column(name = "access_successful", nullable = false)
     @Builder.Default
     private Boolean accessSuccessful = false;
+
+    @Column(name = "access_type", length = 50)
+    @Builder.Default
+    private String accessType = "EMAIL_CODE";  // EMAIL_CODE, OTP_WHATSAPP
 }

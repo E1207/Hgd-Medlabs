@@ -60,6 +60,18 @@ medlab:
     from-name: MedLab - HGD
     base-url: ${FRONTEND_URL:https://medlab-frontend.railway.app}
   
+  # Configuration WhatsApp Business API (Meta Cloud)
+  whatsapp:
+    enabled: ${WHATSAPP_ENABLED:true}
+    api-url: https://graph.facebook.com/v18.0
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID}
+    access-token: ${WHATSAPP_ACCESS_TOKEN}
+    otp-validity-minutes: 10
+  
+  # Configuration CORS
+  cors:
+    allowed-origins: ${CORS_ORIGINS:https://medlab-frontend.railway.app}
+  
   scheduler:
     enabled: true
 

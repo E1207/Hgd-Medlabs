@@ -441,6 +441,33 @@ public class PatientResultService {
     }
 
     /**
+     * Marque un résultat comme ouvert/consulté
+     * Appelé après vérification OTP WhatsApp
+     */
+    @Transactional
+    public void markAsOpened(UUID resultId, String ipAddress, String userAgent) {
+        PatientResult result = patientResultRepository.findById(resultId)
+                .orElseThrow(() -> new RuntimeException("Résultat non trouvé"));
+        
+        if (result.getStatus() != ResultStatus.OPENED) {
+            result.setStatus(ResultStatus.OPENED);
+            result.setOpenedAt(LocalDateTime.now());
+            patientResultRepository.save(result);
+            
+            // Logger l'accès
+            accessLogRepository.save(AccessLog.builder()
+                    .patientResult(result)
+                    .ipAddress(ipAddress)
+                    .userAgent(userAgent)
+                    .accessedAt(LocalDateTime.now())
+                    .accessType("OTP_WHATSAPP")
+                    .build());
+            
+            log.info("Résultat {} marqué comme ouvert (via WhatsApp OTP)", resultId);
+        }
+    }
+
+    /**
      * Génère un code d'accès aléatoire
      */
     private String generateAccessCode() {
