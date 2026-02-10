@@ -1,0 +1,91 @@
+spring:
+  application:
+    name: medlab
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/medlab
+    username: ${DB_USERNAME:medlab_user}
+    password: ${DB_PASSWORD:medlab_password}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  
+  thymeleaf:
+    check-template-location: false
+  
+  mail:
+    host: ${EMAIL_HOST:smtp.gmail.com}
+    port: ${EMAIL_PORT:587}
+    username: ${EMAIL_USERNAME:gabrielpondi07@gmail.com}
+    password: ${EMAIL_PASSWORD:xjirltnzwjvopenn}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+  
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Configuration MedLab
+medlab:
+  file:
+    upload-dir: ${UPLOAD_DIR:/Users/emmanuel/Documents/dev/github/Hgd-Medlabs/data/medlab/uploads}
+    watch-dir: ${WATCH_DIR:/Users/emmanuel/Documents/dev/github/Hgd-Medlabs/data/medlab/incoming}
+  
+  security:
+    jwt-secret: ${JWT_SECRET:6YVvjGtLIDQMQysmNuP/fJVBWRKn79ndU+Ipxrz/uzw=}
+    jwt-expiration: 86400000 # 24 heures en millisecondes
+    access-code-length: 8
+    max-access-attempts: 5
+  
+  email:
+    from: ${EMAIL_FROM:gabrielpondi07@gmail.com}
+    from-name: MedLab - HGD
+    base-url: ${BASE_URL:http://localhost:4200}
+  
+  scheduler:
+    enabled: true
+    fixed-delay: 10000 # 10 secondes
+
+# Swagger/OpenAPI Configuration
+springdoc:
+  api-docs:
+    path: /api/docs
+  swagger-ui:
+    path: /api/swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+# Logging
+logging:
+  level:
+    cm.hgd.medlab: DEBUG
+    org.springframework.security: WARN
+    org.hibernate.SQL: WARN
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/medlab.log

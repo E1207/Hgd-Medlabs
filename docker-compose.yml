@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  # Base de données PostgreSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: medlab-postgres
+    environment:
+      POSTGRES_DB: medlab
+      POSTGRES_USER: medlab
+      POSTGRES_PASSWORD: medlab123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./database/init-data.sql:/docker-entrypoint-initdb.d/2-init-data.sql
+    networks:
+      - medlab-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medlab"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Backend Spring Boot
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: medlab-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/medlab
+      DB_USERNAME: medlab
+      DB_PASSWORD: medlab123
+      JWT_SECRET: ThisIsAVerySecretKeyForJWTTokenGenerationPleaseChangeInProduction
+      UPLOAD_DIR: /app/uploads
+      WATCH_DIR: /app/incoming
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USERNAME: ${EMAIL_USERNAME}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@medlab.hgd.cm}
+      BASE_URL: ${BASE_URL:-http://localhost:4200}
+    ports:
+      - "8080:8080"
+    volumes:
+      - uploads_data:/app/uploads
+      - incoming_data:/app/incoming
+    networks:
+      - medlab-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Application Frontend Angular
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: medlab-frontend
+    ports:
+      - "4200:80"
+    networks:
+      - medlab-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+  incoming_data:
+    driver: local
+
+networks:
+  medlab-network:
+    driver: bridge

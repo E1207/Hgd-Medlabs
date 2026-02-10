@@ -1,0 +1,91 @@
+<div class="login-container">
+  <div class="login-content">
+    <!-- Left side - Branding -->
+    <div class="login-branding">
+      <div class="brand-content">
+        <div class="brand-logo">
+          <mat-icon>biotech</mat-icon>
+        </div>
+        <h1>MedLab</h1>
+        <p class="brand-tagline">Système de Gestion des Résultats de Laboratoire</p>
+        <div class="brand-features">
+          <div class="feature">
+            <mat-icon>speed</mat-icon>
+            <span>Résultats en temps réel</span>
+          </div>
+          <div class="feature">
+            <mat-icon>security</mat-icon>
+            <span>Données sécurisées</span>
+          </div>
+          <div class="feature">
+            <mat-icon>notifications_active</mat-icon>
+            <span>Notifications automatiques</span>
+          </div>
+        </div>
+        <div class="hospital-badge">
+          <mat-icon>local_hospital</mat-icon>
+          <span>Hôpital Général de Douala</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right side - Login Form -->
+    <div class="login-form-section">
+      <mat-card class="login-card">
+        <div class="card-header">
+          <h2>Connexion</h2>
+          <p>Bienvenue ! Connectez-vous pour accéder au système.</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Adresse email</mat-label>
+            <input matInput type="email" formControlName="email" autocomplete="email" placeholder="nom@hopital.cm">
+            <mat-icon matPrefix>mail_outline</mat-icon>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+              L'email est requis
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+              Veuillez entrer un email valide
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Mot de passe</mat-label>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="current-password" placeholder="••••••••">
+            <mat-icon matPrefix>lock_outline</mat-icon>
+            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button" tabindex="-1">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+              Le mot de passe est requis
+            </mat-error>
+          </mat-form-field>
+
+          <button mat-flat-button color="primary" type="submit" class="login-button" [disabled]="loading || !loginForm.valid">
+            <span *ngIf="!loading">Se connecter</span>
+            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          </button>
+        </form>
+
+        <div class="demo-credentials">
+          <div class="demo-header">
+            <mat-icon>info</mat-icon>
+            <span>Identifiants de démonstration</span>
+          </div>
+          <div class="demo-items">
+            <div class="demo-item">
+              <span class="demo-role">Admin</span>
+              <code>admin&#64;medlab.hgd.cm</code>
+            </div>
+            <div class="demo-item">
+              <span class="demo-role">Technicien</span>
+              <code>technicien1&#64;medlab.hgd.cm</code>
+            </div>
+          </div>
+          <div class="demo-password">Mot de passe : <code>medlab123</code></div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+</div>

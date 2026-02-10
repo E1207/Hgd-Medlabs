@@ -1,0 +1,118 @@
+<!-- Show toolbar only when not on public pages -->
+<ng-container *ngIf="!isPublicRoute">
+  <header class="app-header">
+    <div class="header-left">
+      <button class="menu-toggle" (click)="drawer.toggle()" *ngIf="isLoggedIn">
+        <mat-icon>menu</mat-icon>
+      </button>
+      
+      <div class="brand">
+        <div class="logo">
+          <mat-icon>biotech</mat-icon>
+        </div>
+        <div class="brand-info">
+          <span class="brand-name">MedLab</span>
+          <span class="brand-org">HGD</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="header-right" *ngIf="isLoggedIn">
+      <!-- Quick Actions -->
+      <button class="header-action-btn" matTooltip="Notifications">
+        <mat-icon>notifications_none</mat-icon>
+        <span class="notification-badge">3</span>
+      </button>
+      
+      <!-- Profile Dropdown -->
+      <div class="profile-dropdown">
+        <button class="profile-trigger" [matMenuTriggerFor]="userMenu">
+          <div class="avatar">{{ getUserInitials() }}</div>
+          <span class="user-name">{{ currentUser?.firstName }}</span>
+          <mat-icon class="chevron">keyboard_arrow_down</mat-icon>
+        </button>
+        
+        <mat-menu #userMenu="matMenu" class="modern-profile-menu" xPosition="before">
+          <div class="profile-card">
+            <div class="profile-avatar">{{ getUserInitials() }}</div>
+            <div class="profile-info">
+              <span class="name">{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+              <span class="role">{{ getRoleLabel() }}</span>
+            </div>
+          </div>
+          <div class="menu-divider"></div>
+          <button mat-menu-item class="menu-item">
+            <mat-icon>person_outline</mat-icon>
+            <span>Mon Profil</span>
+          </button>
+          <button mat-menu-item class="menu-item">
+            <mat-icon>settings_outlined</mat-icon>
+            <span>Préférences</span>
+          </button>
+          <div class="menu-divider"></div>
+          <button mat-menu-item class="menu-item logout" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Déconnexion</span>
+          </button>
+        </mat-menu>
+      </div>
+    </div>
+  </header>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav #drawer mode="side" [opened]="isLoggedIn" class="app-sidenav">
+      <!-- Navigation Links -->
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <span class="nav-group-label">Menu Principal</span>
+          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+            <div class="nav-icon"><mat-icon>grid_view</mat-icon></div>
+            <span>Tableau de Bord</span>
+          </a>
+          <a routerLink="/results" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+            <div class="nav-icon"><mat-icon>folder_open</mat-icon></div>
+            <span>Historique</span>
+          </a>
+          <a routerLink="/results/upload" routerLinkActive="active" class="nav-item">
+            <div class="nav-icon"><mat-icon>cloud_upload</mat-icon></div>
+            <span>Nouveau Résultat</span>
+          </a>
+        </div>
+
+        <div class="nav-group" *ngIf="isAdmin">
+          <span class="nav-group-label">Administration</span>
+          <a routerLink="/users" routerLinkActive="active" class="nav-item">
+            <div class="nav-icon"><mat-icon>people_outline</mat-icon></div>
+            <span>Utilisateurs</span>
+          </a>
+          <a routerLink="/settings" routerLinkActive="active" class="nav-item">
+            <div class="nav-icon"><mat-icon>tune</mat-icon></div>
+            <span>Paramètres</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div class="hospital-badge">
+          <div class="hospital-icon">
+            <mat-icon>local_hospital</mat-icon>
+          </div>
+          <div class="hospital-text">
+            <span class="hospital-name">HGD</span>
+            <span class="hospital-desc">Laboratoire</span>
+          </div>
+        </div>
+      </div>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="app-content">
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</ng-container>
+
+<!-- Public routes (login, result verification) without sidebar -->
+<ng-container *ngIf="isPublicRoute">
+  <router-outlet></router-outlet>
+</ng-container>

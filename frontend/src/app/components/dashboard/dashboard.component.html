@@ -1,0 +1,149 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="icon-wrapper">
+          <mat-icon>grid_view</mat-icon>
+        </div>
+        <div>
+          <h1>Tableau de Bord</h1>
+          <p class="subtitle">Bienvenue ! Voici l'aperçu des activités du laboratoire</p>
+        </div>
+      </div>
+      <div class="date-display">
+        <mat-icon>calendar_today</mat-icon>
+        <span>{{ today | date:'EEEE d MMMM yyyy':'':'fr' }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid" *ngIf="stats">
+    <mat-card class="stat-card primary">
+      <mat-card-content>
+        <div class="stat-icon-wrapper">
+          <mat-icon>description</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.totalResults }}</div>
+          <div class="stat-label">Total Résultats</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card success">
+      <mat-card-content>
+        <div class="stat-icon-wrapper">
+          <mat-icon>send</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.resultsSentToday }}</div>
+          <div class="stat-label">Envoyés Aujourd'hui</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card warning">
+      <mat-card-content>
+        <div class="stat-icon-wrapper">
+          <mat-icon>schedule</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.resultsAwaitingCompletion }}</div>
+          <div class="stat-label">En Attente</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card info">
+      <mat-card-content>
+        <div class="stat-icon-wrapper">
+          <mat-icon>visibility</mat-icon>
+        </div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.openRate | number:'1.0-0' }}%</div>
+          <div class="stat-label">Taux d'Ouverture</div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Loading state -->
+  <div class="stats-grid" *ngIf="!stats">
+    <mat-card class="stat-card loading-card" *ngFor="let i of [1,2,3,4]">
+      <mat-card-content>
+        <div class="loading-placeholder"></div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Recent Results -->
+  <mat-card class="recent-results">
+    <mat-card-header>
+      <div class="card-header-left">
+        <div class="header-icon">
+          <mat-icon>history</mat-icon>
+        </div>
+        <div>
+          <mat-card-title>Résultats Récents</mat-card-title>
+          <mat-card-subtitle>Les 10 dernières activités</mat-card-subtitle>
+        </div>
+      </div>
+      <button mat-flat-button color="primary" routerLink="/results" class="view-all-btn">
+        <mat-icon>arrow_forward</mat-icon>
+        Voir tout
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <table mat-table [dataSource]="recentResults" class="results-table" *ngIf="recentResults.length > 0">
+        <ng-container matColumnDef="referenceDossier">
+          <th mat-header-cell *matHeaderCellDef>Référence</th>
+          <td mat-cell *matCellDef="let result">
+            <span class="reference-badge">{{ result.referenceDossier }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="patientName">
+          <th mat-header-cell *matHeaderCellDef>Patient</th>
+          <td mat-cell *matCellDef="let result">
+            <div class="patient-cell">
+              <div class="patient-avatar">{{ getPatientInitials(result) }}</div>
+              <span>{{ getPatientName(result) }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let result">
+            <span class="status-badge" [ngClass]="result.status">
+              <span class="status-dot"></span>
+              {{ getStatusLabel(result.status) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef>Date</th>
+          <td mat-cell *matCellDef="let result" class="date-cell">
+            {{ result.createdAt | date:'dd/MM/yyyy HH:mm' }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns" class="table-row"></tr>
+      </table>
+
+      <div class="empty-state" *ngIf="recentResults.length === 0">
+        <mat-icon>inbox</mat-icon>
+        <h3>Aucun résultat pour le moment</h3>
+        <p>Les résultats importés apparaîtront ici</p>
+        <button mat-raised-button color="primary" routerLink="/results/upload">
+          <mat-icon>add</mat-icon>
+          Importer un résultat
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>
