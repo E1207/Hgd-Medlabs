@@ -46,6 +46,7 @@ public class PatientResultService {
     private final EmailService emailService;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
+    private final EncryptionService encryptionService;
 
     @Value("${medlab.security.access-code-length}")
     private int accessCodeLength;
@@ -58,6 +59,7 @@ public class PatientResultService {
 
     /**
      * Upload manuel d'un résultat avec extraction automatique des métadonnées
+     * Le PDF est CHIFFRÉ avec AES-256 puis stocké dans PostgreSQL
      */
     @Transactional
     public PatientResultResponse uploadResult(MultipartFile file, PatientResultRequest request) throws IOException {
@@ -68,13 +70,18 @@ public class PatientResultService {
             throw new RuntimeException("Un résultat existe déjà avec cette référence: " + request.getReferenceDossier());
         }
 
-        // Sauvegarder le fichier
-        String filePath = fileService.saveUploadedFile(file);
+        // Lire le contenu du PDF
+        byte[] pdfContent = file.getBytes();
+        long originalSize = pdfContent.length;
+        
+        // CHIFFRER le PDF avant stockage (AES-256-GCM)
+        byte[] encryptedContent = encryptionService.encrypt(pdfContent);
+        log.info("PDF chiffré: {} Ko -> {} Ko", originalSize / 1024, encryptedContent.length / 1024);
         
         // Récupérer l'utilisateur connecté
         User currentUser = authService.getCurrentUser();
 
-        // Créer le résultat
+        // Créer le résultat avec le PDF CHIFFRÉ stocké en base
         PatientResult result = PatientResult.builder()
                 .referenceDossier(request.getReferenceDossier())
                 .patientFirstName(request.getPatientFirstName())
@@ -82,7 +89,9 @@ public class PatientResultService {
                 .patientBirthdate(request.getPatientBirthdate())
                 .patientEmail(request.getPatientEmail())
                 .patientPhone(request.getPatientPhone())
-                .pdfFilePath(filePath)
+                .pdfContent(encryptedContent)  // PDF CHIFFRÉ en base
+                .pdfFileSize(originalSize)     // Taille originale (avant chiffrement)
+                .pdfContentType("application/pdf")
                 .pdfFileName(file.getOriginalFilename())
                 .status(ResultStatus.COMPLETED)
                 .importMethod(ImportMethod.MANUAL)
@@ -91,19 +100,26 @@ public class PatientResultService {
                 .build();
 
         result = patientResultRepository.save(result);
-        log.info("Résultat créé avec succès: {}", result.getId());
+        log.info("Résultat créé avec succès (PDF chiffré AES-256): {} ({} Ko)", 
+                result.getId(), originalSize / 1024);
 
         return convertToResponse(result);
     }
 
     /**
      * Import automatique d'un résultat depuis le scheduler
+     * Le PDF est lu depuis le disque, CHIFFRÉ puis stocké dans PostgreSQL
      */
     @Transactional
     public PatientResult importResultFromFile(String filePath, String fileName) throws IOException {
         log.info("Import automatique du fichier: {}", fileName);
 
-        // Extraire les métadonnées du PDF
+        // Lire le contenu du PDF
+        java.io.File file = new java.io.File(filePath);
+        byte[] pdfContent = java.nio.file.Files.readAllBytes(file.toPath());
+        long originalSize = pdfContent.length;
+
+        // Extraire les métadonnées du PDF AVANT chiffrement
         PdfMetadata metadata = fileService.extractMetadata(filePath);
 
         // Générer une référence si non trouvée
@@ -118,7 +134,11 @@ public class PatientResultService {
             return null;
         }
 
-        // Créer le résultat avec statut IMPORTED
+        // CHIFFRER le PDF avant stockage (AES-256-GCM)
+        byte[] encryptedContent = encryptionService.encrypt(pdfContent);
+        log.info("PDF chiffré: {} Ko -> {} Ko", originalSize / 1024, encryptedContent.length / 1024);
+
+        // Créer le résultat avec le PDF CHIFFRÉ stocké en base
         PatientResult result = PatientResult.builder()
                 .referenceDossier(referenceDossier)
                 .patientFirstName(metadata.getFirstName())
@@ -126,7 +146,9 @@ public class PatientResultService {
                 .patientBirthdate(metadata.getBirthdate())
                 .patientEmail(metadata.getEmail())
                 .patientPhone(metadata.getPhone())
-                .pdfFilePath(filePath)
+                .pdfContent(encryptedContent)  // PDF CHIFFRÉ en base
+                .pdfFileSize(originalSize)     // Taille originale
+                .pdfContentType("application/pdf")
                 .pdfFileName(fileName)
                 .status(ResultStatus.IMPORTED)
                 .importMethod(ImportMethod.AUTO)
@@ -134,7 +156,8 @@ public class PatientResultService {
                 .build();
 
         result = patientResultRepository.save(result);
-        log.info("Résultat importé automatiquement: {} - Référence: {}", result.getId(), referenceDossier);
+        log.info("Résultat importé (PDF chiffré AES-256): {} - Réf: {} ({} Ko)", 
+                result.getId(), referenceDossier, originalSize / 1024);
 
         return result;
     }
@@ -277,13 +300,37 @@ public class PatientResultService {
 
     /**
      * Récupère le PDF d'un résultat
+     * Les PDFs sont stockés CHIFFRÉS en base - ils sont DÉCHIFFRÉS à la lecture
      */
     @Transactional(readOnly = true)
     public byte[] getResultPdf(UUID resultId) throws IOException {
         PatientResult result = patientResultRepository.findById(resultId)
                 .orElseThrow(() -> new RuntimeException("Résultat non trouvé"));
 
-        return fileService.readFile(result.getPdfFilePath());
+        // Priorité 1: PDF stocké en base de données (chiffré)
+        if (result.getPdfContent() != null && result.getPdfContent().length > 0) {
+            byte[] storedContent = result.getPdfContent();
+            
+            // Vérifier si le contenu est chiffré et déchiffrer
+            if (encryptionService.isEncrypted(storedContent)) {
+                log.debug("PDF chiffré récupéré depuis PostgreSQL, déchiffrement...");
+                byte[] decryptedContent = encryptionService.decrypt(storedContent);
+                log.debug("PDF déchiffré: {} Ko", decryptedContent.length / 1024);
+                return decryptedContent;
+            } else {
+                // Ancien PDF non chiffré (legacy)
+                log.debug("PDF non chiffré (legacy) récupéré depuis PostgreSQL ({} Ko)", storedContent.length / 1024);
+                return storedContent;
+            }
+        }
+        
+        // Fallback: lecture depuis le disque (pour les anciens enregistrements)
+        if (result.getPdfFilePath() != null) {
+            log.info("PDF non trouvé en base, lecture depuis: {}", result.getPdfFilePath());
+            return fileService.readFile(result.getPdfFilePath());
+        }
+        
+        throw new RuntimeException("PDF non disponible pour ce résultat");
     }
 
     /**

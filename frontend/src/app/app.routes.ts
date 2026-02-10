@@ -31,6 +31,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'storage',
+    loadComponent: () => import('./components/storage/storage-management.component').then(m => m.StorageManagementComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'public/results/:id',
     loadComponent: () => import('./components/public/result-verification/result-verification.component').then(m => m.ResultVerificationComponent)
   },

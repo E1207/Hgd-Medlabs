@@ -54,11 +54,25 @@ medlab:
     upload-dir: ${UPLOAD_DIR:/Users/emmanuel/Documents/dev/github/Hgd-Medlabs/data/medlab/uploads}
     watch-dir: ${WATCH_DIR:/Users/emmanuel/Documents/dev/github/Hgd-Medlabs/data/medlab/incoming}
   
+  # Configuration du stockage local (conformité hospitalière)
+  storage:
+    # Répertoire d'archivage des anciens fichiers
+    archive-dir: ${ARCHIVE_DIR:/Users/emmanuel/Documents/dev/github/Hgd-Medlabs/data/medlab/archives}
+    # Répertoire de sauvegarde
+    backup-dir: ${BACKUP_DIR:/Users/emmanuel/Documents/dev/github/Hgd-Medlabs/data/medlab/backups}
+    # Durée de rétention avant archivage (jours)
+    retention-days-active: ${RETENTION_DAYS:365}
+    # Activer l'archivage automatique
+    archive-enabled: ${ARCHIVE_ENABLED:false}
+  
   security:
     jwt-secret: ${JWT_SECRET:6YVvjGtLIDQMQysmNuP/fJVBWRKn79ndU+Ipxrz/uzw=}
     jwt-expiration: 86400000 # 24 heures en millisecondes
     access-code-length: 8
     max-access-attempts: 5
+    # Clé de chiffrement AES-256 pour les PDFs (OBLIGATOIRE: changer en production!)
+    # Minimum 32 caractères pour une sécurité optimale
+    encryption-key: ${ENCRYPTION_KEY:MedLab_HGD_AES256_Key_Change_Me!}
   
   email:
     from: ${EMAIL_FROM:gabrielpondi07@gmail.com}

@@ -52,7 +52,23 @@ public class PatientResult {
     @Column(name = "patient_phone", length = 20)
     private String patientPhone;
 
-    @Column(name = "pdf_file_path", nullable = false, length = 500)
+    // ===== STOCKAGE PDF DANS POSTGRESQL =====
+    // Le contenu binaire du PDF est stocké directement dans la base de données
+    // Avantages: sécurité, intégrité, sauvegarde unique avec pg_dump
+    
+    @Lob
+    @Column(name = "pdf_content", columnDefinition = "BYTEA")
+    private byte[] pdfContent;
+    
+    @Column(name = "pdf_file_size")
+    private Long pdfFileSize;
+    
+    @Column(name = "pdf_content_type", length = 100)
+    @Builder.Default
+    private String pdfContentType = "application/pdf";
+
+    // Chemin legacy (pour migration, peut être null pour les nouveaux enregistrements)
+    @Column(name = "pdf_file_path", length = 500)
     private String pdfFilePath;
 
     @Column(name = "pdf_file_name", nullable = false, length = 255)

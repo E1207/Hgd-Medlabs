@@ -1,0 +1,93 @@
+# Configuration Production - Railway
+# Les variables d'environnement sont injectées par Railway
+
+spring:
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME:postgres}
+    password: ${DATABASE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+        show_sql: false
+  
+  mail:
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+# Configuration MedLab Production
+medlab:
+  file:
+    upload-dir: /app/data/uploads
+    watch-dir: /app/data/incoming
+  
+  storage:
+    archive-dir: /app/data/archives
+    backup-dir: /app/data/backups
+    retention-days-active: 365
+    archive-enabled: false
+  
+  security:
+    jwt-secret: ${JWT_SECRET}
+    jwt-expiration: 86400000
+    access-code-length: 8
+    max-access-attempts: 5
+    encryption-key: ${ENCRYPTION_KEY}
+  
+  email:
+    from: ${EMAIL_FROM:noreply@medlab-hgd.cm}
+    from-name: MedLab - HGD
+    base-url: ${FRONTEND_URL:https://medlab-frontend.railway.app}
+  
+  scheduler:
+    enabled: true
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    cm.hgd.medlab: INFO
+    org.springframework: WARN
+    org.hibernate: WARN
+  file:
+    name: /app/logs/medlab.log
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# Actuator for health checks
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+server:
+  port: ${PORT:8080}
+  error:
+    include-message: never
+    include-stacktrace: never
