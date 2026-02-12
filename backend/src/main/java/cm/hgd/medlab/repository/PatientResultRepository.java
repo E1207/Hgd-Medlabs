@@ -70,4 +70,14 @@ public interface PatientResultRepository extends JpaRepository<PatientResult, UU
 
     @Query("SELECT pr FROM PatientResult pr LEFT JOIN FETCH pr.importedBy ORDER BY pr.createdAt DESC")
     List<PatientResult> findRecentResults(Pageable pageable);
+
+    // Statistiques hebdomadaires
+    @Query("SELECT COUNT(pr) FROM PatientResult pr WHERE pr.createdAt >= :startDate AND pr.createdAt < :endDate")
+    Long countCreatedBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(pr) FROM PatientResult pr WHERE pr.sentAt >= :startDate AND pr.sentAt < :endDate")
+    Long countSentBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT COUNT(pr) FROM PatientResult pr WHERE pr.status = 'OPENED' AND pr.openedAt >= :startDate AND pr.openedAt < :endDate")
+    Long countOpenedBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 }

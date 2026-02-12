@@ -1,0 +1,174 @@
+.addon-detail-dialog {
+  width: 100%;
+}
+
+.addon-header {
+  margin: -24px -24px 0;
+  padding: 32px 24px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+}
+
+.addon-icon {
+  width: 72px;
+  height: 72px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+  }
+}
+
+.addon-title {
+  h2 {
+    margin: 0 0 4px;
+    font-size: 24px;
+    font-weight: 600;
+  }
+
+  .category {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+}
+
+.badges {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+
+  .badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    mat-icon {
+      font-size: 14px;
+      width: 14px;
+      height: 14px;
+    }
+
+    &.new {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    &.popular {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    &.subscribed {
+      background: #d1fae5;
+      color: #059669;
+    }
+  }
+}
+
+mat-dialog-content {
+  padding-top: 24px !important;
+}
+
+.addon-description {
+  p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #475569;
+  }
+}
+
+mat-divider {
+  margin: 24px 0;
+}
+
+.addon-features {
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1e293b;
+
+    mat-icon {
+      color: #f59e0b;
+    }
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    li {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      font-size: 14px;
+      color: #475569;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: #10b981;
+      }
+    }
+  }
+}
+
+.pricing-section {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+
+  .price-display {
+    .price {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .period {
+      font-size: 14px;
+      color: #64748b;
+      margin-left: 4px;
+    }
+  }
+
+  .billing-note {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: #64748b;
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  gap: 12px;
+  justify-content: flex-end;
+
+  button {
+    mat-icon {
+      margin-right: 6px;
+    }
+  }
+}

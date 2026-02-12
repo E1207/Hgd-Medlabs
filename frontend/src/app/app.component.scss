@@ -4,6 +4,9 @@
   flex-direction: column;
   height: 100vh;
   background: #f8fafc;
+  // Éviter de créer un contexte de stacking qui perturbe les overlays
+  transform: none;
+  contain: none;
 }
 
 // ===== MODERN HEADER =====
@@ -12,13 +15,14 @@
   top: 0;
   z-index: 1000;
   height: 64px;
-  background: #ffffff;
+  background: var(--brand-header-bg, #ffffff);
   border-bottom: 1px solid #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  color: var(--brand-header-text, inherit);
 }
 
 .header-left {
@@ -58,21 +62,64 @@
   align-items: center;
   gap: 10px;
 
+  .home-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: #64748b;
+
+    &:hover {
+      background: #e2e8f0;
+      color: #1e40af;
+      border-color: #cbd5e1;
+    }
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
   .logo {
     width: 38px;
     height: 38px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    background: var(--brand-primary, linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%));
     border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    overflow: hidden;
+
+    &.medlabs {
+      background: var(--brand-primary, linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%));
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    &.medradio {
+      background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+      box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
+    }
 
     mat-icon {
       color: white;
       font-size: 22px;
       width: 22px;
       height: 22px;
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
   }
 
@@ -91,7 +138,7 @@
     .brand-org {
       font-size: 14px;
       font-weight: 600;
-      color: #3b82f6;
+      color: var(--brand-primary, #3b82f6);
       background: #eff6ff;
       padding: 2px 8px;
       border-radius: 4px;
@@ -202,17 +249,18 @@
 // ===== SIDENAV CONTAINER =====
 .sidenav-container {
   flex: 1;
-  overflow: hidden;
+  // Ne pas mettre overflow:visible ici, ça casse le layout
 }
 
 // ===== MODERN SIDEBAR =====
 .app-sidenav {
   width: 250px;
-  background: #ffffff;
+  background: var(--brand-sidebar-bg, #ffffff);
   border-right: 1px solid #e5e7eb;
   display: flex;
   flex-direction: column;
   box-shadow: 1px 0 3px rgba(0, 0, 0, 0.02);
+  color: var(--brand-sidebar-text, inherit);
 }
 
 .sidebar-nav {
@@ -250,6 +298,7 @@
   text-decoration: none;
   transition: all 0.2s;
   cursor: pointer;
+  position: relative;
 
   .nav-icon {
     width: 36px;
@@ -274,9 +323,71 @@
     font-weight: 500;
   }
 
+  .new-badge {
+    position: absolute;
+    right: 8px;
+    padding: 2px 6px;
+    background: linear-gradient(135deg, #f43f5e 0%, #ec4899 100%);
+    color: white;
+    font-size: 9px;
+    font-weight: 700;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    animation: pulse-badge 2s infinite;
+  }
+
+  @keyframes pulse-badge {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+
+  &.marketplace-item {
+    .nav-icon {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      
+      mat-icon {
+        color: #d97706;
+      }
+    }
+
+    &:hover .nav-icon,
+    &.active .nav-icon {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      box-shadow: 0 2px 8px rgba(217, 119, 6, 0.3);
+      
+      mat-icon {
+        color: white;
+      }
+    }
+  }
+
+  &.branding-item {
+    .nav-icon {
+      background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+      
+      mat-icon {
+        color: #db2777;
+      }
+    }
+
+    &:hover .nav-icon,
+    &.active .nav-icon {
+      background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+      
+      mat-icon {
+        color: white;
+      }
+    }
+  }
+
   &:hover {
     background: #f8fafc;
-    color: #3b82f6;
+    color: var(--brand-primary, #3b82f6);
 
     .nav-icon {
       background: #eff6ff;
@@ -285,10 +396,10 @@
 
   &.active {
     background: #eff6ff;
-    color: #1d4ed8;
+    color: var(--brand-secondary, #1d4ed8);
 
     .nav-icon {
-      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      background: var(--brand-primary, linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%));
       box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 
       mat-icon {
@@ -321,7 +432,7 @@
   .hospital-icon {
     width: 36px;
     height: 36px;
-    background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    background: var(--brand-primary, linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%));
     border-radius: 8px;
     display: flex;
     align-items: center;
@@ -342,12 +453,12 @@
     .hospital-name {
       font-size: 13px;
       font-weight: 700;
-      color: #1e40af;
+      color: var(--brand-secondary, #1e40af);
     }
 
     .hospital-desc {
       font-size: 11px;
-      color: #3b82f6;
+      color: var(--brand-primary, #3b82f6);
     }
   }
 }
@@ -358,6 +469,7 @@
   overflow: auto;
   background: #f8fafc;
   height: 100%;
+  // Ne pas utiliser transform ici car cela casse les overlays
 }
 
 // ===== RESPONSIVE =====

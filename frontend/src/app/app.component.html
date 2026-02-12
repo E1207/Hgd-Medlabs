@@ -1,23 +1,34 @@
-<!-- Show toolbar only when not on public pages -->
-<ng-container *ngIf="!isPublicRoute">
+<!-- Home page - Service Selector (full screen, no sidebar) - Always visible -->
+<ng-container *ngIf="isHomeRoute">
+  <router-outlet></router-outlet>
+</ng-container>
+
+<!-- Service pages (MedLabs, MedRadio, etc.) with sidebar -->
+<ng-container *ngIf="isServiceRoute && !isPublicRoute">
   <header class="app-header">
     <div class="header-left">
-      <button class="menu-toggle" (click)="drawer.toggle()" *ngIf="isLoggedIn">
+      <button class="menu-toggle" (click)="drawer.toggle()">
         <mat-icon>menu</mat-icon>
       </button>
       
       <div class="brand">
-        <div class="logo">
-          <mat-icon>biotech</mat-icon>
+        <button class="home-btn" (click)="goToHome()" matTooltip="Retour à l'accueil">
+          <mat-icon>apps</mat-icon>
+        </button>
+        <div class="logo" [class.medlabs]="currentService === 'medlabs'" [class.medradio]="currentService === 'medradio'">
+          <!-- Logo personnalisé si branding actif -->
+          <img *ngIf="brandingConfig?.logoUrl" [src]="brandingConfig!.logoUrl" alt="Logo" />
+          <!-- Icône par défaut -->
+          <mat-icon *ngIf="!brandingConfig?.logoUrl">{{ getServiceIcon() }}</mat-icon>
         </div>
         <div class="brand-info">
-          <span class="brand-name">MedLab</span>
+          <span class="brand-name">{{ getServiceName() }}</span>
           <span class="brand-org">HGD</span>
         </div>
       </div>
     </div>
     
-    <div class="header-right" *ngIf="isLoggedIn">
+    <div class="header-right">
       <!-- Quick Actions -->
       <button class="header-action-btn" matTooltip="Notifications">
         <mat-icon>notifications_none</mat-icon>
@@ -41,6 +52,10 @@
             </div>
           </div>
           <div class="menu-divider"></div>
+          <button mat-menu-item class="menu-item" (click)="goToHome()">
+            <mat-icon>apps</mat-icon>
+            <span>Changer de service</span>
+          </button>
           <button mat-menu-item class="menu-item">
             <mat-icon>person_outline</mat-icon>
             <span>Mon Profil</span>
@@ -60,20 +75,20 @@
   </header>
 
   <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav #drawer mode="side" [opened]="isLoggedIn" class="app-sidenav">
-      <!-- Navigation Links -->
-      <nav class="sidebar-nav">
+    <mat-sidenav #drawer mode="side" [opened]="true" class="app-sidenav">
+      <!-- MedLabs Navigation -->
+      <nav class="sidebar-nav" *ngIf="currentService === 'medlabs'">
         <div class="nav-group">
           <span class="nav-group-label">Menu Principal</span>
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item">
+          <a routerLink="/medlabs/dashboard" routerLinkActive="active" class="nav-item">
             <div class="nav-icon"><mat-icon>grid_view</mat-icon></div>
             <span>Tableau de Bord</span>
           </a>
-          <a routerLink="/results" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
+          <a routerLink="/medlabs/results" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item">
             <div class="nav-icon"><mat-icon>folder_open</mat-icon></div>
             <span>Historique</span>
           </a>
-          <a routerLink="/results/upload" routerLinkActive="active" class="nav-item">
+          <a routerLink="/medlabs/results/upload" routerLinkActive="active" class="nav-item">
             <div class="nav-icon"><mat-icon>cloud_upload</mat-icon></div>
             <span>Nouveau Résultat</span>
           </a>
@@ -81,30 +96,55 @@
 
         <div class="nav-group" *ngIf="isAdmin">
           <span class="nav-group-label">Administration</span>
-          <a routerLink="/users" routerLinkActive="active" class="nav-item">
+          <a routerLink="/medlabs/users" routerLinkActive="active" class="nav-item">
             <div class="nav-icon"><mat-icon>people_outline</mat-icon></div>
             <span>Utilisateurs</span>
           </a>
-          <a routerLink="/storage" routerLinkActive="active" class="nav-item">
+          <a routerLink="/medlabs/storage" routerLinkActive="active" class="nav-item">
             <div class="nav-icon"><mat-icon>storage</mat-icon></div>
             <span>Stockage</span>
           </a>
-          <a routerLink="/settings" routerLinkActive="active" class="nav-item">
+          <a routerLink="/medlabs/settings" routerLinkActive="active" class="nav-item">
             <div class="nav-icon"><mat-icon>tune</mat-icon></div>
             <span>Paramètres</span>
+          </a>
+          <a routerLink="/medlabs/marketplace" routerLinkActive="active" class="nav-item marketplace-item">
+            <div class="nav-icon"><mat-icon>storefront</mat-icon></div>
+            <span>Marketplace</span>
+            <span class="new-badge">NEW</span>
+          </a>
+        </div>
+
+        <!-- Add-ons actifs (apparaissent après achat) -->
+        <div class="nav-group" *ngIf="isAdmin && isBrandingActive">
+          <span class="nav-group-label">Add-ons</span>
+          <a routerLink="/medlabs/branding" routerLinkActive="active" class="nav-item branding-item">
+            <div class="nav-icon"><mat-icon>palette</mat-icon></div>
+            <span>Branding</span>
+          </a>
+        </div>
+      </nav>
+
+      <!-- MedRadio Navigation (placeholder) -->
+      <nav class="sidebar-nav" *ngIf="currentService === 'medradio'">
+        <div class="nav-group">
+          <span class="nav-group-label">Menu Principal</span>
+          <a routerLink="/medradio/dashboard" routerLinkActive="active" class="nav-item">
+            <div class="nav-icon"><mat-icon>grid_view</mat-icon></div>
+            <span>Tableau de Bord</span>
           </a>
         </div>
       </nav>
 
       <!-- Sidebar Footer -->
       <div class="sidebar-footer">
-        <div class="hospital-badge">
+        <div class="hospital-badge" (click)="goToHome()" style="cursor: pointer;">
           <div class="hospital-icon">
             <mat-icon>local_hospital</mat-icon>
           </div>
           <div class="hospital-text">
             <span class="hospital-name">HGD</span>
-            <span class="hospital-desc">Laboratoire</span>
+            <span class="hospital-desc">{{ getServiceName() }}</span>
           </div>
         </div>
       </div>
@@ -117,6 +157,6 @@
 </ng-container>
 
 <!-- Public routes (login, result verification) without sidebar -->
-<ng-container *ngIf="isPublicRoute">
+<ng-container *ngIf="isPublicRoute || isLoginRoute">
   <router-outlet></router-outlet>
 </ng-container>

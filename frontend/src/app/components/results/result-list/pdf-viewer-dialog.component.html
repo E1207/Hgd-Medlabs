@@ -1,0 +1,31 @@
+<div class="pdf-dialog">
+  <div class="dialog-header">
+    <h2>
+      <mat-icon>picture_as_pdf</mat-icon>
+      {{ data.fileName }}
+    </h2>
+    <button mat-icon-button (click)="close()" matTooltip="Fermer">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  
+  <div class="pdf-container" *ngIf="pdfUrl; else loading">
+    <iframe [src]="pdfUrl" width="100%" height="100%"></iframe>
+  </div>
+  
+  <ng-template #loading>
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+      <p>Chargement du PDF...</p>
+    </div>
+  </ng-template>
+  
+  <div class="dialog-actions">
+    <button mat-stroked-button (click)="download()">
+      <mat-icon>download</mat-icon> Télécharger
+    </button>
+    <button mat-raised-button color="primary" (click)="close()">
+      Fermer
+    </button>
+  </div>
+</div>

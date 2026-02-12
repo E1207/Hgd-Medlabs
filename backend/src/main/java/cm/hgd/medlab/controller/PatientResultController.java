@@ -110,7 +110,7 @@ public class PatientResultController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Supprimer un résultat", description = "Supprime un résultat (admin uniquement)")
-    public ResponseEntity<Void> deleteResult(@PathVariable UUID id) throws IOException {
+    public ResponseEntity<Void> deleteResult(@PathVariable UUID id) {
         patientResultService.deleteResult(id);
         return ResponseEntity.noContent().build();
     }

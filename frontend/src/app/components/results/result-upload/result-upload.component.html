@@ -1,0 +1,97 @@
+<div class="upload-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>upload_file</mat-icon>
+        Nouveau Résultat
+      </mat-card-title>
+      <mat-card-subtitle>Importez le PDF — les champs seront remplis automatiquement</mat-card-subtitle>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="drop-zone" 
+           [class.has-file]="selectedFile"
+           [class.extracting]="extracting"
+           (click)="fileInput.click()"
+           (dragover)="onDragOver($event)"
+           (dragleave)="onDragLeave($event)"
+           (drop)="onDrop($event)">
+        <mat-icon class="upload-icon" *ngIf="!selectedFile && !extracting">cloud_upload</mat-icon>
+        <mat-spinner diameter="48" *ngIf="extracting"></mat-spinner>
+        <mat-icon class="upload-icon success" *ngIf="selectedFile && !extracting">check_circle</mat-icon>
+        <p *ngIf="!selectedFile && !extracting">Glissez-déposez le PDF ici ou cliquez pour parcourir</p>
+        <p *ngIf="extracting">Analyse du PDF en cours...</p>
+        <p class="file-name" *ngIf="selectedFile && !extracting">
+          <mat-icon>description</mat-icon>
+          {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
+        </p>
+        <p class="extract-info" *ngIf="extractedInfo && !extracting">
+          <mat-icon>auto_fix_high</mat-icon> Champs remplis automatiquement depuis le PDF
+        </p>
+        <input #fileInput type="file" accept=".pdf" (change)="onFileSelected($event)" hidden>
+      </div>
+
+      <form [formGroup]="resultForm" (ngSubmit)="onSubmit()">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Référence Dossier / Code Patient</mat-label>
+          <input matInput formControlName="referenceDossier" placeholder="Ex: 2601122170">
+          <mat-icon matPrefix>tag</mat-icon>
+          <mat-error *ngIf="resultForm.get('referenceDossier')?.hasError('required')">
+            La référence est obligatoire
+          </mat-error>
+        </mat-form-field>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nom du patient</mat-label>
+            <input matInput formControlName="patientLastName">
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom du patient</mat-label>
+            <input matInput formControlName="patientFirstName">
+            <mat-icon matPrefix>person</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Date de Naissance</mat-label>
+          <input matInput type="date" formControlName="patientBirthdate">
+          <mat-icon matPrefix>cake</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email du patient</mat-label>
+          <input matInput type="email" formControlName="patientEmail" placeholder="patient&#64;email.com">
+          <mat-icon matPrefix>email</mat-icon>
+          <mat-error *ngIf="resultForm.get('patientEmail')?.hasError('email')">
+            Format d'email invalide
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Téléphone Mobile</mat-label>
+          <input matInput formControlName="patientPhone" placeholder="+237XXXXXXXXX">
+          <mat-icon matPrefix>phone</mat-icon>
+        </mat-form-field>
+
+        <mat-checkbox formControlName="sendImmediately" color="primary" class="send-checkbox">
+          Envoyer immédiatement au patient après upload
+        </mat-checkbox>
+
+        <div class="actions">
+          <button mat-stroked-button type="button" (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+            Annuler
+          </button>
+          <button mat-raised-button color="primary" type="submit" 
+                  [disabled]="loading || !resultForm.valid || !selectedFile">
+            <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+            <mat-icon *ngIf="!loading">upload</mat-icon>
+            <span *ngIf="!loading">Enregistrer</span>
+            <span *ngIf="loading">Envoi en cours...</span>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

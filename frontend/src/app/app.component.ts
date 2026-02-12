@@ -1,6 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +10,11 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AuthService } from './services/auth.service';
+import { MarketplaceService } from './services/marketplace.service';
+import { BrandingService } from './services/branding.service';
+import { BrandingConfig } from './models/branding.model';
+import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -31,15 +36,72 @@ import { AuthService } from './services/auth.service';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
-  title = 'MedLab - HGD';
+export class AppComponent implements OnInit, OnDestroy {
+  title = 'SIL - HGD';
+  currentService: 'home' | 'medlabs' | 'medradio' | null = null;
+  isBrandingActive = false;
+  brandingConfig: BrandingConfig | null = null;
+  private subscriptionWatcher?: Subscription;
+  private brandingWatcher?: Subscription;
   
   @ViewChild('drawer') drawer!: MatSidenav;
 
   constructor(
     public authService: AuthService,
+    private marketplaceService: MarketplaceService,
+    private brandingService: BrandingService,
     private router: Router
-  ) {}
+  ) {
+    // Track current route to determine active service
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: any) => {
+      this.updateCurrentService(event.url);
+    });
+  }
+
+  ngOnInit(): void {
+    // Watch for subscription changes to update branding status
+    this.subscriptionWatcher = this.marketplaceService.watchSubscription().subscribe(() => {
+      this.isBrandingActive = this.marketplaceService.isBrandingActive();
+      // Appliquer le branding si l'add-on est actif
+      if (this.isBrandingActive) {
+        this.loadAndApplyBranding();
+      }
+    });
+    
+    // Watch for branding config changes
+    this.brandingWatcher = this.brandingService.watchBrandingConfig().subscribe(config => {
+      if (config && this.isBrandingActive) {
+        this.brandingConfig = config;
+        this.brandingService.applyBrandingStyles(config);
+      }
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptionWatcher?.unsubscribe();
+    this.brandingWatcher?.unsubscribe();
+  }
+  
+  private loadAndApplyBranding(): void {
+    this.brandingService.getBrandingConfig().subscribe(config => {
+      this.brandingConfig = config;
+      this.brandingService.applyBrandingStyles(config);
+    });
+  }
+
+  private updateCurrentService(url: string): void {
+    if (url.startsWith('/medlabs')) {
+      this.currentService = 'medlabs';
+    } else if (url.startsWith('/medradio')) {
+      this.currentService = 'medradio';
+    } else if (url === '/home' || url === '/') {
+      this.currentService = 'home';
+    } else {
+      this.currentService = null;
+    }
+  }
 
   get isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
@@ -50,7 +112,24 @@ export class AppComponent {
   }
 
   get isPublicRoute(): boolean {
-    return this.router.url.startsWith('/public') || this.router.url === '/login';
+    return this.router.url.startsWith('/public');
+  }
+
+  get isLoginRoute(): boolean {
+    return this.router.url.includes('/login');
+  }
+
+  get isHomeRoute(): boolean {
+    return this.router.url === '/home' || this.router.url === '/';
+  }
+
+  get isServiceRoute(): boolean {
+    // Service route but NOT login page
+    return (this.currentService === 'medlabs' || this.currentService === 'medradio') && !this.isLoginRoute;
+  }
+
+  get showSidebar(): boolean {
+    return this.isLoggedIn && this.isServiceRoute && !this.isPublicRoute;
   }
 
   get currentUser() {
@@ -59,6 +138,22 @@ export class AppComponent {
 
   get isAdmin(): boolean {
     return this.authService.isAdmin();
+  }
+
+  getServiceName(): string {
+    switch (this.currentService) {
+      case 'medlabs': return 'MedLabs';
+      case 'medradio': return 'MedRadio';
+      default: return 'SIL';
+    }
+  }
+
+  getServiceIcon(): string {
+    switch (this.currentService) {
+      case 'medlabs': return 'biotech';
+      case 'medradio': return 'radiology';
+      default: return 'local_hospital';
+    }
   }
 
   getUserInitials(): string {
@@ -71,6 +166,10 @@ export class AppComponent {
     const user = this.currentUser;
     if (!user) return '';
     return user.role === 'ADMIN' ? 'Administrateur' : 'Technicien';
+  }
+
+  goToHome(): void {
+    this.router.navigate(['/home']);
   }
 
   logout(): void {

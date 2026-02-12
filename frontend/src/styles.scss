@@ -24,6 +24,15 @@ $medlab-theme: mat.define-light-theme((
 
 /* ===== CSS VARIABLES ===== */
 :root {
+  /* Branding - ces valeurs sont surchargeables dynamiquement */
+  --brand-primary: #3b82f6;
+  --brand-secondary: #1e40af;
+  --brand-accent: #10b981;
+  --brand-header-bg: #ffffff;
+  --brand-header-text: #1e293b;
+  --brand-sidebar-bg: #1e293b;
+  --brand-sidebar-text: #94a3b8;
+  
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
@@ -124,9 +133,62 @@ html, body {
   }
 }
 
-/* ===== OVERLAY Z-INDEX ===== */
+/* ===== CDK OVERLAY FIX ===== */
+/* Fix pour les menus déroulants qui s'affichent mal positionnés */
 .cdk-overlay-container {
-  z-index: 1000;
+  z-index: 1050 !important;
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.cdk-overlay-connected-position-bounding-box {
+  position: fixed !important;
+}
+
+.cdk-overlay-pane {
+  pointer-events: auto;
+  position: absolute !important;
+}
+
+/* Fix pour mat-select et mat-menu dans les conteneurs avec overflow */
+.cdk-global-overlay-wrapper {
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  position: fixed !important;
+  display: flex;
+}
+
+/* Fix spécifique pour mat-select dropdown */
+.mat-mdc-select-panel {
+  position: relative !important;
+  max-height: 256px !important;
+}
+
+/* Fix pour mat-paginator select */
+.mat-mdc-paginator-page-size-select {
+  .mat-mdc-select-trigger {
+    height: auto;
+  }
+}
+
+/* Fix pour les éléments qui utilisent transform et peuvent casser les overlays */
+.mat-sidenav-content,
+.mat-drawer-content {
+  transform: none !important;
+  will-change: auto !important;
+}
+
+/* Fix pour mat-sidenav-container - ne pas utiliser overflow:visible car ça casse le layout */
+.mat-sidenav-container,
+.mat-drawer-container {
+  transform: none !important;
 }
 
 /* ===== DIALOG CENTERING (Applied via panelClass) ===== */
@@ -140,7 +202,8 @@ html, body {
 /* Modern dialog styling */
 .complete-dialog-panel,
 .pdf-viewer-dialog-panel,
-.user-dialog-panel {
+.user-dialog-panel,
+.confirm-dialog-panel {
   .mat-mdc-dialog-container {
     border-radius: var(--radius-xl) !important;
     overflow: hidden;
@@ -152,7 +215,8 @@ html, body {
   }
 }
 
-.complete-dialog-panel {
+.complete-dialog-panel,
+.confirm-dialog-panel {
   max-width: 500px !important;
   width: 90vw !important;
 }

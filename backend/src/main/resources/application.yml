@@ -66,13 +66,13 @@ medlab:
     archive-enabled: ${ARCHIVE_ENABLED:false}
   
   security:
-    jwt-secret: ${JWT_SECRET:}
+    jwt-secret: ${JWT_SECRET:HgdMedLabsSecretKeyForJwtTokenGeneration2026SecureKey256bits}
     jwt-expiration: 86400000 # 24 heures en millisecondes
     access-code-length: 8
     max-access-attempts: 5
     # Clé de chiffrement AES-256 pour les PDFs (OBLIGATOIRE en production!)
     # Minimum 32 caractères pour une sécurité optimale
-    encryption-key: ${ENCRYPTION_KEY:}
+    encryption-key: ${ENCRYPTION_KEY:HgdMedLabsDefaultEncryptionKey32}
   
   email:
     from: ${EMAIL_FROM:}

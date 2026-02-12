@@ -78,6 +78,92 @@
     </mat-card>
   </div>
 
+  <!-- Charts Section -->
+  <div class="charts-section" *ngIf="stats">
+    <!-- Row 1: Status Distribution + Weekly Activity -->
+    <div class="charts-row">
+      <!-- Donut Chart - Status Distribution -->
+      <mat-card class="chart-card status-chart">
+        <mat-card-header>
+          <div class="chart-header">
+            <div class="chart-icon status">
+              <mat-icon>pie_chart</mat-icon>
+            </div>
+            <div>
+              <mat-card-title>Distribution des Statuts</mat-card-title>
+              <mat-card-subtitle>Répartition actuelle des résultats</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container donut-container">
+            <canvas baseChart
+              [type]="statusChartType"
+              [data]="statusChartData"
+              [options]="statusChartOptions">
+            </canvas>
+            <div class="donut-center">
+              <span class="donut-value">{{ stats.totalResults }}</span>
+              <span class="donut-label">Total</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Bar Chart - Weekly Activity -->
+      <mat-card class="chart-card weekly-chart">
+        <mat-card-header>
+          <div class="chart-header">
+            <div class="chart-icon weekly">
+              <mat-icon>bar_chart</mat-icon>
+            </div>
+            <div>
+              <mat-card-title>Activité Hebdomadaire</mat-card-title>
+              <mat-card-subtitle>Résultats des 7 derniers jours</mat-card-subtitle>
+            </div>
+          </div>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="chart-container bar-container">
+            <canvas baseChart
+              [type]="weeklyChartType"
+              [data]="weeklyChartData"
+              [options]="weeklyChartOptions">
+            </canvas>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Row 2: Open Rate Evolution -->
+    <mat-card class="chart-card full-width open-rate-chart">
+      <mat-card-header>
+        <div class="chart-header">
+          <div class="chart-icon open-rate">
+            <mat-icon>trending_up</mat-icon>
+          </div>
+          <div>
+            <mat-card-title>Évolution du Taux d'Ouverture</mat-card-title>
+            <mat-card-subtitle>Progression sur les 7 derniers jours</mat-card-subtitle>
+          </div>
+        </div>
+        <div class="current-rate">
+          <span class="rate-value">{{ stats.openRate | number:'1.0-0' }}%</span>
+          <span class="rate-label">Taux actuel</span>
+        </div>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container line-container">
+          <canvas baseChart
+            [type]="openRateChartType"
+            [data]="openRateChartData"
+            [options]="openRateChartOptions">
+          </canvas>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
   <!-- Recent Results -->
   <mat-card class="recent-results">
     <mat-card-header>
@@ -87,10 +173,10 @@
         </div>
         <div>
           <mat-card-title>Résultats Récents</mat-card-title>
-          <mat-card-subtitle>Les 10 dernières activités</mat-card-subtitle>
+          <mat-card-subtitle>Les 5 dernières activités</mat-card-subtitle>
         </div>
       </div>
-      <button mat-flat-button color="primary" routerLink="/results" class="view-all-btn">
+      <button mat-flat-button color="primary" routerLink="/medlabs/results" class="view-all-btn">
         <mat-icon>arrow_forward</mat-icon>
         Voir tout
       </button>
@@ -139,7 +225,7 @@
         <mat-icon>inbox</mat-icon>
         <h3>Aucun résultat pour le moment</h3>
         <p>Les résultats importés apparaîtront ici</p>
-        <button mat-raised-button color="primary" routerLink="/results/upload">
+        <button mat-raised-button color="primary" routerLink="/medlabs/results/upload">
           <mat-icon>add</mat-icon>
           Importer un résultat
         </button>

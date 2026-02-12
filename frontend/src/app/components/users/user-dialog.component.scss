@@ -1,0 +1,42 @@
+h2 { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px;
+  margin: 0;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #1565C0, #1976D2);
+  color: white;
+  margin: -24px -24px 24px -24px;
+}
+.form-row { 
+  display: flex; 
+  gap: 16px; 
+}
+.form-row mat-form-field { 
+  flex: 1; 
+}
+.full-width { 
+  width: 100%; 
+}
+mat-slide-toggle { 
+  margin: 16px 0; 
+  display: block; 
+}
+mat-dialog-content {
+  padding-top: 0 !important;
+}
+mat-dialog-actions {
+  padding: 16px 24px !important;
+  margin: 0 -24px -24px -24px !important;
+  background: #f5f5f5;
+}
+mat-dialog-actions button mat-spinner { 
+  display: inline-block; 
+  margin-right: 8px; 
+}
+@media (max-width: 500px) {
+  .form-row { 
+    flex-direction: column; 
+    gap: 0; 
+  }
+}

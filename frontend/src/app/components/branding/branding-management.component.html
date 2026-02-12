@@ -1,0 +1,393 @@
+<div class="branding-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <div class="icon-wrapper">
+          <mat-icon>palette</mat-icon>
+        </div>
+        <div>
+          <h1>Branding Personnalisé</h1>
+          <p class="subtitle">Personnalisez l'apparence de votre interface, emails et documents PDF</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-stroked-button (click)="resetToDefaults()">
+          <mat-icon>restart_alt</mat-icon>
+          Réinitialiser
+        </button>
+        <button mat-raised-button color="primary" (click)="saveConfig()" [disabled]="saving">
+          <mat-icon>{{ saving ? 'hourglass_empty' : 'save' }}</mat-icon>
+          {{ saving ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement de la configuration...</p>
+  </div>
+
+  <!-- Content -->
+  <div class="branding-content" *ngIf="!loading && config">
+    <mat-tab-group animationDuration="200ms">
+      <!-- Tab 1: Logo -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>image</mat-icon>
+          <span>Logo</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="logo-section">
+            <h3>Logo de l'établissement</h3>
+            <p class="section-description">
+              Ce logo apparaîtra dans l'en-tête de l'interface, les emails et les documents PDF.
+              Formats acceptés: PNG, JPG, SVG. Taille maximale: 2 Mo.
+            </p>
+
+            <div class="logo-upload-area"
+                 [class.drag-over]="dragOver"
+                 [class.has-logo]="config.logoUrl"
+                 (dragover)="onDragOver($event)"
+                 (dragleave)="onDragLeave($event)"
+                 (drop)="onDrop($event)"
+                 (click)="triggerLogoUpload()">
+              
+              <input type="file" 
+                     #logoInput 
+                     accept="image/*" 
+                     (change)="onLogoSelected($event)"
+                     style="display: none;">
+
+              <div class="upload-content" *ngIf="!config.logoUrl && !logoUploading">
+                <mat-icon class="upload-icon">cloud_upload</mat-icon>
+                <p>Glissez-déposez votre logo ici</p>
+                <span>ou cliquez pour parcourir</span>
+              </div>
+
+              <div class="uploading-content" *ngIf="logoUploading">
+                <mat-spinner diameter="32"></mat-spinner>
+                <p>Téléchargement en cours...</p>
+              </div>
+
+              <div class="logo-preview" *ngIf="config.logoUrl && !logoUploading">
+                <img [src]="config.logoUrl" alt="Logo">
+              </div>
+            </div>
+
+            <div class="logo-actions" *ngIf="config.logoUrl">
+              <span class="file-name">
+                <mat-icon>insert_drive_file</mat-icon>
+                {{ config.logoFileName || 'logo.png' }}
+              </span>
+              <button mat-stroked-button color="warn" (click)="removeLogo(); $event.stopPropagation()">
+                <mat-icon>delete</mat-icon>
+                Supprimer
+              </button>
+            </div>
+          </mat-card>
+
+          <mat-card class="tips-card">
+            <h4><mat-icon>tips_and_updates</mat-icon> Conseils</h4>
+            <ul>
+              <li>Utilisez un logo avec un fond transparent (PNG) pour un meilleur rendu</li>
+              <li>Dimensions recommandées: 200x60 pixels minimum</li>
+              <li>Le logo sera redimensionné automatiquement selon le contexte</li>
+            </ul>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 2: Couleurs -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>color_lens</mat-icon>
+          <span>Couleurs</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <mat-card class="colors-section">
+            <h3>Palette de couleurs prédéfinies</h3>
+            <div class="color-palettes">
+              <button *ngFor="let palette of colorPalettes"
+                      class="palette-btn"
+                      [matTooltip]="palette.name"
+                      (click)="applyPalette(palette)">
+                <span class="color-dot" [style.background]="palette.primary"></span>
+                <span class="color-dot" [style.background]="palette.secondary"></span>
+                <span class="color-dot" [style.background]="palette.accent"></span>
+              </button>
+            </div>
+          </mat-card>
+
+          <div class="colors-grid">
+            <mat-card class="color-card">
+              <h4>Couleurs principales</h4>
+              
+              <div class="color-row">
+                <label>Couleur primaire</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.primaryColor"
+                         (input)="onColorChange('primaryColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.primaryColor"
+                         (input)="onColorChange('primaryColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+
+              <div class="color-row">
+                <label>Couleur secondaire</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.secondaryColor"
+                         (input)="onColorChange('secondaryColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.secondaryColor"
+                         (input)="onColorChange('secondaryColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+
+              <div class="color-row">
+                <label>Couleur d'accent</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.accentColor"
+                         (input)="onColorChange('accentColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.accentColor"
+                         (input)="onColorChange('accentColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+            </mat-card>
+
+            <mat-card class="color-card">
+              <h4>En-tête</h4>
+              
+              <div class="color-row">
+                <label>Fond de l'en-tête</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.headerBackgroundColor"
+                         (input)="onColorChange('headerBackgroundColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.headerBackgroundColor"
+                         (input)="onColorChange('headerBackgroundColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+
+              <div class="color-row">
+                <label>Texte de l'en-tête</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.headerTextColor"
+                         (input)="onColorChange('headerTextColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.headerTextColor"
+                         (input)="onColorChange('headerTextColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+            </mat-card>
+
+            <mat-card class="color-card">
+              <h4>Barre latérale</h4>
+              
+              <div class="color-row">
+                <label>Fond du menu</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.sidebarBackgroundColor"
+                         (input)="onColorChange('sidebarBackgroundColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.sidebarBackgroundColor"
+                         (input)="onColorChange('sidebarBackgroundColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+
+              <div class="color-row">
+                <label>Texte du menu</label>
+                <div class="color-input-group">
+                  <input type="color" 
+                         [value]="config.sidebarTextColor"
+                         (input)="onColorChange('sidebarTextColor', $any($event.target).value)">
+                  <input type="text" 
+                         [value]="config.sidebarTextColor"
+                         (input)="onColorChange('sidebarTextColor', $any($event.target).value)"
+                         class="hex-input">
+                </div>
+              </div>
+            </mat-card>
+          </div>
+
+          <!-- Preview -->
+          <mat-card class="preview-card">
+            <h4>Aperçu de l'interface</h4>
+            <div class="interface-preview">
+              <div class="preview-header" [style.background]="config.headerBackgroundColor">
+                <div class="preview-logo" *ngIf="config.logoUrl">
+                  <img [src]="config.logoUrl" alt="Logo">
+                </div>
+                <div class="preview-logo placeholder" *ngIf="!config.logoUrl">
+                  <mat-icon>local_hospital</mat-icon>
+                </div>
+                <span [style.color]="config.headerTextColor">MedLabs</span>
+              </div>
+              <div class="preview-body">
+                <div class="preview-sidebar" [style.background]="config.sidebarBackgroundColor">
+                  <div class="preview-nav-item" [style.color]="config.sidebarTextColor">
+                    <mat-icon>dashboard</mat-icon> Tableau de bord
+                  </div>
+                  <div class="preview-nav-item active" [style.background]="config.primaryColor">
+                    <mat-icon>folder</mat-icon> Résultats
+                  </div>
+                  <div class="preview-nav-item" [style.color]="config.sidebarTextColor">
+                    <mat-icon>settings</mat-icon> Paramètres
+                  </div>
+                </div>
+                <div class="preview-content">
+                  <div class="preview-button" [style.background]="config.primaryColor">Bouton Principal</div>
+                  <div class="preview-button secondary" [style.background]="config.secondaryColor">Bouton Secondaire</div>
+                  <div class="preview-badge" [style.background]="config.accentColor">Badge</div>
+                </div>
+              </div>
+            </div>
+          </mat-card>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 3: Templates Email -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>email</mat-icon>
+          <span>Templates Email</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="email-config-grid">
+            <mat-card class="email-settings">
+              <h3>Configuration des emails</h3>
+              
+              <div class="form-group">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Couleur principale des emails</mat-label>
+                  <input matInput type="text" [(ngModel)]="config.emailPrimaryColor" (ngModelChange)="updatePreviews()">
+                  <input type="color" matSuffix 
+                         [value]="config.emailPrimaryColor"
+                         (input)="config.emailPrimaryColor = $any($event.target).value; updatePreviews()"
+                         style="border: none; width: 30px; height: 30px; cursor: pointer;">
+                </mat-form-field>
+              </div>
+
+              <div class="form-group">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Pied de page (HTML)</mat-label>
+                  <textarea matInput 
+                            [(ngModel)]="config.emailFooterHtml" 
+                            (ngModelChange)="updatePreviews()"
+                            rows="4"
+                            placeholder="<p>© 2026 Votre établissement - Tous droits réservés</p>"></textarea>
+                  <mat-hint>Code HTML pour le pied de page des emails</mat-hint>
+                </mat-form-field>
+              </div>
+
+              <button mat-stroked-button color="primary" (click)="toggleEmailPreview()">
+                <mat-icon>{{ showEmailPreview ? 'visibility_off' : 'visibility' }}</mat-icon>
+                {{ showEmailPreview ? 'Masquer' : 'Afficher' }} l'aperçu
+              </button>
+            </mat-card>
+
+            <mat-card class="email-preview-card" *ngIf="showEmailPreview">
+              <h4>Aperçu de l'email</h4>
+              <div class="email-preview-frame" [innerHTML]="emailPreviewHtml"></div>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 4: PDF -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon>picture_as_pdf</mat-icon>
+          <span>PDF</span>
+        </ng-template>
+
+        <div class="tab-content">
+          <div class="pdf-config-grid">
+            <mat-card class="pdf-settings">
+              <h3>Configuration des PDF</h3>
+
+              <div class="form-group">
+                <mat-slide-toggle 
+                  [(ngModel)]="config.pdfHeaderEnabled"
+                  (ngModelChange)="updatePreviews()">
+                  Afficher l'en-tête personnalisé
+                </mat-slide-toggle>
+              </div>
+
+              <div class="form-group" *ngIf="config.pdfHeaderEnabled">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Position du logo</mat-label>
+                  <mat-select [(ngModel)]="config.pdfHeaderLogoPosition" (ngModelChange)="updatePreviews()">
+                    <mat-option value="left">Gauche</mat-option>
+                    <mat-option value="center">Centre</mat-option>
+                    <mat-option value="right">Droite</mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+
+              <div class="form-group" *ngIf="config.pdfHeaderEnabled">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Texte de l'en-tête</mat-label>
+                  <input matInput 
+                         [(ngModel)]="config.pdfHeaderText" 
+                         (ngModelChange)="updatePreviews()"
+                         placeholder="Nom de votre établissement">
+                </mat-form-field>
+              </div>
+
+              <div class="form-group">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Couleur principale PDF</mat-label>
+                  <input matInput type="text" [(ngModel)]="config.pdfPrimaryColor" (ngModelChange)="updatePreviews()">
+                  <input type="color" matSuffix 
+                         [value]="config.pdfPrimaryColor"
+                         (input)="config.pdfPrimaryColor = $any($event.target).value; updatePreviews()"
+                         style="border: none; width: 30px; height: 30px; cursor: pointer;">
+                </mat-form-field>
+              </div>
+
+              <div class="form-group">
+                <mat-form-field appearance="outline" class="full-width">
+                  <mat-label>Texte du pied de page</mat-label>
+                  <input matInput 
+                         [(ngModel)]="config.pdfFooterText" 
+                         (ngModelChange)="updatePreviews()"
+                         placeholder="Document généré automatiquement">
+                </mat-form-field>
+              </div>
+
+              <button mat-stroked-button color="primary" (click)="togglePdfPreview()">
+                <mat-icon>{{ showPdfPreview ? 'visibility_off' : 'visibility' }}</mat-icon>
+                {{ showPdfPreview ? 'Masquer' : 'Afficher' }} l'aperçu
+              </button>
+            </mat-card>
+
+            <mat-card class="pdf-preview-card" *ngIf="showPdfPreview">
+              <h4>Aperçu du PDF</h4>
+              <div class="pdf-preview-frame" [innerHTML]="pdfPreviewHtml"></div>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </div>
+</div>

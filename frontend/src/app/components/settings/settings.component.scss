@@ -1,0 +1,27 @@
+.settings-container { max-width: 900px; margin: 0 auto; }
+h1 {
+  display: flex; align-items: center; gap: 12px;
+  font-size: 24px; margin-bottom: 24px;
+}
+.loading-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 60px 0; color: #666;
+  p { margin-top: 16px; }
+}
+.settings-grid { display: flex; flex-direction: column; gap: 20px; }
+.setting-card {
+  mat-card-header { margin-bottom: 16px; }
+  mat-card-title { font-size: 18px !important; }
+}
+.setting-icon {
+  font-size: 32px !important;
+  width: 48px !important;
+  height: 48px !important;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: #E3F2FD;
+  color: #1565C0;
+}
+.full-width { width: 100%; }
+mat-card-actions { padding: 0 16px 16px !important; }
+mat-spinner { display: inline-block; margin-right: 6px; }

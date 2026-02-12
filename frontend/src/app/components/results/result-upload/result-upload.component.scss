@@ -1,0 +1,42 @@
+.upload-container { max-width: 800px; margin: 0 auto; }
+mat-card-header { margin-bottom: 24px; }
+mat-card-title { display: flex; align-items: center; gap: 12px; font-size: 22px !important; }
+.drop-zone {
+  border: 2px dashed #ccc;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  margin-bottom: 30px;
+  transition: all 0.3s;
+  background-color: #fafafa;
+}
+.drop-zone:hover, .drop-zone.dragover { 
+  border-color: #1565c0; 
+  background-color: #e3f2fd; 
+}
+.drop-zone.has-file {
+  border-color: #4CAF50;
+  background-color: #E8F5E9;
+}
+.drop-zone.extracting {
+  border-color: #FF9800;
+  background-color: #FFF3E0;
+}
+.upload-icon { 
+  font-size: 64px; width: 64px; height: 64px; color: #1565c0; 
+}
+.upload-icon.success { color: #4CAF50; }
+.file-name { 
+  color: #4CAF50; font-weight: 500; margin-top: 10px; 
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.extract-info {
+  color: #1565C0; font-size: 13px; margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.full-width { width: 100%; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.send-checkbox { margin: 16px 0; display: block; }
+.actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
+mat-spinner { display: inline-block; margin-right: 8px; }

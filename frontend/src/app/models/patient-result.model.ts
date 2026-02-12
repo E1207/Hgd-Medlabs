@@ -45,6 +45,15 @@ export interface DashboardStats {
   resultsAwaitingCompletion: number;
   openRate: number;
   statusDistribution: { [key: string]: number };
+  weeklyStats?: DailyStats[];
+}
+
+export interface DailyStats {
+  date: string;           // Format: YYYY-MM-DD
+  dayLabel: string;       // Ex: "Lun 10"
+  importedCount: number;  // Nombre de résultats importés ce jour
+  sentCount: number;      // Nombre de résultats envoyés ce jour
+  openRate: number;       // Taux d'ouverture ce jour
 }
 
 export interface PdfMetadata {

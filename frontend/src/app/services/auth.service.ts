@@ -43,7 +43,8 @@ export class AuthService {
     localStorage.removeItem(this.TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     this.currentUserSubject.next(null);
-    this.router.navigate(['/login']);
+    // Redirect to home (service selector) instead of login
+    this.router.navigate(['/home']);
   }
 
   getToken(): string | null {

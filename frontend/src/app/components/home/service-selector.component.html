@@ -1,0 +1,126 @@
+<div class="service-selector-container">
+  <!-- Header Section -->
+  <div class="selector-header">
+    <div class="header-content">
+      <div class="hospital-branding">
+        <div class="hospital-logo">
+          <mat-icon>local_hospital</mat-icon>
+        </div>
+        <div class="hospital-info">
+          <h1>Hôpital Général de Douala</h1>
+          <p>Système d'Information de Laboratoire</p>
+        </div>
+      </div>
+
+      <!-- User info if connected -->
+      <div class="user-section" *ngIf="isAuthenticated">
+        <div class="user-info">
+          <mat-icon>account_circle</mat-icon>
+          <span>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</span>
+        </div>
+        <button mat-stroked-button class="logout-btn" (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Déconnexion
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services Grid -->
+  <div class="services-section">
+    <div class="section-header">
+      <h2>Sélectionnez un service</h2>
+      <p *ngIf="!isAuthenticated">Connectez-vous pour accéder aux modules du système hospitalier</p>
+      <p *ngIf="isAuthenticated">Bienvenue ! Cliquez sur un service pour y accéder</p>
+    </div>
+
+    <div class="services-grid">
+      <div 
+        *ngFor="let service of services" 
+        class="service-card" 
+        [class.unavailable]="!service.available"
+        [class.no-access]="isAuthenticated && !hasAccessToService(service) && service.available"
+        [style.--card-color]="service.color"
+        [style.--card-gradient]="service.gradient"
+        (click)="navigateToService(service)"
+        matRipple
+        [matRippleDisabled]="!service.available">
+        
+        <div class="card-glow"></div>
+        
+        <div class="card-header">
+          <div class="service-icon" [style.background]="service.gradient">
+            <mat-icon>{{ service.icon }}</mat-icon>
+          </div>
+          <div class="status-badge" [class.active]="service.available" [class.locked]="isAuthenticated && !hasAccessToService(service) && service.available">
+            <ng-container *ngIf="!service.available">Bientôt</ng-container>
+            <ng-container *ngIf="service.available && isAuthenticated && hasAccessToService(service)">Accès</ng-container>
+            <ng-container *ngIf="service.available && isAuthenticated && !hasAccessToService(service)">Restreint</ng-container>
+            <ng-container *ngIf="service.available && !isAuthenticated">Connexion</ng-container>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <h3>{{ service.name }}</h3>
+          <p>{{ service.description }}</p>
+        </div>
+        
+        <div class="card-footer">
+          <button class="enter-btn" [disabled]="!service.available">
+            <ng-container *ngIf="!service.available">
+              <span>Bientôt disponible</span>
+              <mat-icon>hourglass_empty</mat-icon>
+            </ng-container>
+            <ng-container *ngIf="service.available && isAuthenticated && hasAccessToService(service)">
+              <span>Accéder</span>
+              <mat-icon>arrow_forward</mat-icon>
+            </ng-container>
+            <ng-container *ngIf="service.available && isAuthenticated && !hasAccessToService(service)">
+              <span>Accès restreint</span>
+              <mat-icon>lock</mat-icon>
+            </ng-container>
+            <ng-container *ngIf="service.available && !isAuthenticated">
+              <span>Se connecter</span>
+              <mat-icon>login</mat-icon>
+            </ng-container>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Info -->
+  <div class="quick-info">
+    <div class="info-card">
+      <mat-icon>schedule</mat-icon>
+      <div class="info-content">
+        <span class="info-value">{{ currentTime }}</span>
+        <span class="info-label">Heure locale</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <mat-icon>event</mat-icon>
+      <div class="info-content">
+        <span class="info-value">{{ currentDate }}</span>
+        <span class="info-label">Date</span>
+      </div>
+    </div>
+    <div class="info-card">
+      <mat-icon>{{ isAuthenticated ? 'verified_user' : 'person_outline' }}</mat-icon>
+      <div class="info-content">
+        <span class="info-value">{{ isAuthenticated ? 'Connecté' : 'Non connecté' }}</span>
+        <span class="info-label">Statut</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="selector-footer">
+    <p>© 2026 HGD - Système d'Information de Laboratoire</p>
+    <div class="footer-links">
+      <a href="#">Aide</a>
+      <a href="#">Support</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+</div>

@@ -1,0 +1,69 @@
+<div class="upgrade-dialog">
+  <div class="dialog-header">
+    <div class="upgrade-icon">
+      <mat-icon>upgrade</mat-icon>
+    </div>
+    <h2>Confirmer la mise à niveau</h2>
+  </div>
+
+  <mat-dialog-content>
+    <div class="upgrade-comparison">
+      <div class="pack-box current">
+        <div class="pack-icon" [style.background]="data.currentPack?.color">
+          <mat-icon>{{ data.currentPack?.icon }}</mat-icon>
+        </div>
+        <span class="pack-name">{{ data.currentPack?.name }}</span>
+        <span class="pack-price">{{ formatPrice(data.currentPack?.price || 0) }}/mois</span>
+      </div>
+
+      <div class="arrow">
+        <mat-icon>arrow_forward</mat-icon>
+      </div>
+
+      <div class="pack-box new">
+        <div class="pack-icon" [style.background]="data.pack.color">
+          <mat-icon>{{ data.pack.icon }}</mat-icon>
+        </div>
+        <span class="pack-name">{{ data.pack.name }}</span>
+        <span class="pack-price">{{ formatPrice(data.pack.price) }}/mois</span>
+      </div>
+    </div>
+
+    <div class="price-difference">
+      <span class="label">Différence de prix</span>
+      <span class="value">+{{ formatPrice(getPriceDifference()) }}/mois</span>
+    </div>
+
+    <div class="new-features">
+      <h3>
+        <mat-icon>auto_awesome</mat-icon>
+        Nouvelles fonctionnalités
+      </h3>
+      <ul>
+        <li *ngFor="let feature of getNewFeatures()">
+          <mat-icon>check_circle</mat-icon>
+          {{ feature.name }}
+        </li>
+      </ul>
+    </div>
+
+    <div class="info-box">
+      <mat-icon>info</mat-icon>
+      <p>
+        La mise à niveau prendra effet immédiatement. 
+        La différence de prix sera calculée au prorata pour cette période de facturation.
+      </p>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-button (click)="cancel()">Annuler</button>
+    <button mat-raised-button 
+            [style.background]="data.pack.color"
+            style="color: white"
+            (click)="confirm()">
+      <mat-icon>upgrade</mat-icon>
+      Confirmer la mise à niveau
+    </button>
+  </mat-dialog-actions>
+</div>

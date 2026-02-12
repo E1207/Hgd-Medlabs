@@ -1,0 +1,358 @@
+<div class="marketplace-container">
+  <!-- Header Stats -->
+  <div class="stats-header" *ngIf="stats">
+    <div class="stats-cards">
+      <mat-card class="stat-card current-plan">
+        <div class="stat-icon" [style.background]="stats.currentPack?.color || '#3b82f6'">
+          <mat-icon>{{ stats.currentPack?.icon || 'workspace_premium' }}</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Pack actuel</span>
+          <span class="stat-value">{{ stats.currentPack?.name }}</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon addons">
+          <mat-icon>extension</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Add-ons actifs</span>
+          <span class="stat-value">{{ stats.activeAddons }}</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon spending">
+          <mat-icon>payments</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Coût mensuel</span>
+          <span class="stat-value">{{ formatPrice(stats.totalMonthlySpend) }}</span>
+        </div>
+      </mat-card>
+
+      <mat-card class="stat-card">
+        <div class="stat-icon billing">
+          <mat-icon>event</mat-icon>
+        </div>
+        <div class="stat-content">
+          <span class="stat-label">Prochaine facturation</span>
+          <span class="stat-value">{{ stats.nextBillingDate | date:'dd MMM yyyy' }}</span>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Usage Progress -->
+    <div class="usage-section" *ngIf="stats.usageStats">
+      <h3>Utilisation du mois</h3>
+      <div class="usage-bars">
+        <div class="usage-item">
+          <div class="usage-header">
+            <span>Utilisateurs</span>
+            <span>{{ stats.usageStats.usersUsed }} / {{ stats.usageStats.usersLimit === -1 ? '∞' : stats.usageStats.usersLimit }}</span>
+          </div>
+          <mat-progress-bar 
+            [value]="getUsagePercentage(stats.usageStats.usersUsed, stats.usageStats.usersLimit)"
+            [color]="getUsageColor(getUsagePercentage(stats.usageStats.usersUsed, stats.usageStats.usersLimit))">
+          </mat-progress-bar>
+        </div>
+
+        <div class="usage-item">
+          <div class="usage-header">
+            <span>Résultats importés</span>
+            <span>{{ stats.usageStats.resultsThisMonth }} / {{ stats.usageStats.resultsLimit === -1 ? '∞' : stats.usageStats.resultsLimit }}</span>
+          </div>
+          <mat-progress-bar 
+            [value]="getUsagePercentage(stats.usageStats.resultsThisMonth, stats.usageStats.resultsLimit)"
+            [color]="getUsageColor(getUsagePercentage(stats.usageStats.resultsThisMonth, stats.usageStats.resultsLimit))">
+          </mat-progress-bar>
+        </div>
+
+        <div class="usage-item">
+          <div class="usage-header">
+            <span>Stockage</span>
+            <span>{{ stats.usageStats.storageUsedGB }} Go / {{ stats.usageStats.storageLimitGB }} Go</span>
+          </div>
+          <mat-progress-bar 
+            [value]="getUsagePercentage(stats.usageStats.storageUsedGB, stats.usageStats.storageLimitGB)"
+            [color]="getUsageColor(getUsagePercentage(stats.usageStats.storageUsedGB, stats.usageStats.storageLimitGB))">
+          </mat-progress-bar>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <mat-tab-group class="marketplace-tabs" animationDuration="200ms">
+    <!-- Packs Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>inventory_2</mat-icon>
+        <span>Packs</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="section-header">
+          <h2>Choisissez votre pack</h2>
+          <p>Sélectionnez le pack adapté à la taille et aux besoins de votre établissement</p>
+        </div>
+
+        <div class="packs-grid">
+          <mat-card *ngFor="let pack of packs" 
+                    class="pack-card"
+                    [class.popular]="pack.popular"
+                    [class.current]="isCurrentPack(pack.id)">
+            
+            <div class="popular-badge" *ngIf="pack.popular">
+              <mat-icon>star</mat-icon>
+              Plus populaire
+            </div>
+
+            <div class="current-badge" *ngIf="isCurrentPack(pack.id)">
+              <mat-icon>check_circle</mat-icon>
+              Votre pack actuel
+            </div>
+
+            <div class="pack-header" [style.background]="pack.color">
+              <mat-icon class="pack-icon">{{ pack.icon }}</mat-icon>
+              <h3>{{ pack.name }}</h3>
+              <p class="pack-description">{{ pack.description }}</p>
+            </div>
+
+            <div class="pack-price">
+              <span class="price">{{ formatPrice(pack.price) }}</span>
+              <span class="period">/mois</span>
+            </div>
+
+            <div class="pack-features">
+              <div *ngFor="let feature of pack.features" 
+                   class="feature-item"
+                   [class.included]="feature.included"
+                   [class.not-included]="!feature.included">
+                <mat-icon>{{ feature.included ? 'check_circle' : 'cancel' }}</mat-icon>
+                <span>{{ feature.name }}</span>
+              </div>
+            </div>
+
+            <div class="pack-limits">
+              <div class="limit-item">
+                <mat-icon>people</mat-icon>
+                <span>{{ pack.limits.maxUsers === -1 ? 'Illimité' : pack.limits.maxUsers + ' utilisateurs' }}</span>
+              </div>
+              <div class="limit-item">
+                <mat-icon>description</mat-icon>
+                <span>{{ pack.limits.maxResultsPerMonth === -1 ? 'Illimité' : pack.limits.maxResultsPerMonth + ' résultats/mois' }}</span>
+              </div>
+              <div class="limit-item">
+                <mat-icon>cloud</mat-icon>
+                <span>{{ pack.limits.maxStorageGB }} Go de stockage</span>
+              </div>
+            </div>
+
+            <div class="pack-actions">
+              <button mat-raised-button 
+                      *ngIf="!isCurrentPack(pack.id) && canUpgradeTo(pack)"
+                      [style.background]="pack.color"
+                      style="color: white"
+                      (click)="upgradePack(pack)">
+                <mat-icon>upgrade</mat-icon>
+                Passer à {{ pack.name }}
+              </button>
+              <button mat-stroked-button 
+                      *ngIf="isCurrentPack(pack.id)"
+                      disabled>
+                <mat-icon>check</mat-icon>
+                Pack actuel
+              </button>
+              <button mat-stroked-button 
+                      *ngIf="!isCurrentPack(pack.id) && !canUpgradeTo(pack)"
+                      disabled
+                      matTooltip="Vous êtes déjà sur un pack supérieur">
+                Inclus
+              </button>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Add-ons Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>extension</mat-icon>
+        <span>Add-ons</span>
+        <span class="tab-badge" *ngIf="addons.length">{{ addons.length }}</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="section-header">
+          <h2>Extensions & Add-ons</h2>
+          <p>Enrichissez votre expérience avec des fonctionnalités supplémentaires</p>
+        </div>
+
+        <!-- Category Filters -->
+        <div class="category-filters">
+          <button mat-stroked-button
+                  [class.active]="selectedCategory === 'ALL'"
+                  (click)="selectCategory('ALL')">
+            <mat-icon>apps</mat-icon>
+            Tout
+            <span class="count">{{ addons.length }}</span>
+          </button>
+          
+          <button mat-stroked-button
+                  *ngFor="let category of categories"
+                  [class.active]="selectedCategory === category"
+                  (click)="selectCategory(category)">
+            <mat-icon>{{ getCategoryIcon(category) }}</mat-icon>
+            {{ getCategoryLabel(category) }}
+            <span class="count">{{ getAddonsCountByCategory(category) }}</span>
+          </button>
+        </div>
+
+        <!-- Addons Grid -->
+        <div class="addons-grid">
+          <mat-card *ngFor="let addon of filteredAddons" 
+                    class="addon-card"
+                    [class.subscribed]="isAddonSubscribed(addon.id)"
+                    (click)="openAddonDetails(addon)">
+            
+            <div class="addon-badges">
+              <span class="badge new" *ngIf="addon.isNew">Nouveau</span>
+              <span class="badge popular" *ngIf="addon.popular">Populaire</span>
+              <span class="badge subscribed" *ngIf="isAddonSubscribed(addon.id)">
+                <mat-icon>check</mat-icon>
+                Actif
+              </span>
+            </div>
+
+            <div class="addon-icon" [style.background]="addon.color">
+              <mat-icon>{{ addon.icon }}</mat-icon>
+            </div>
+
+            <div class="addon-content">
+              <h4>{{ addon.name }}</h4>
+              <p class="category">{{ getCategoryLabel(addon.category) }}</p>
+              <p class="description">{{ addon.shortDescription }}</p>
+            </div>
+
+            <div class="addon-footer">
+              <div class="addon-price">
+                <span class="price">{{ formatPrice(addon.price) }}</span>
+                <span class="period">{{ addon.billingType === 'MONTHLY' ? '/mois' : (addon.billingType === 'ONE_TIME' ? 'unique' : '/an') }}</span>
+              </div>
+              <button mat-icon-button [matTooltip]="isAddonSubscribed(addon.id) ? 'Gérer' : 'Voir les détails'">
+                <mat-icon>{{ isAddonSubscribed(addon.id) ? 'settings' : 'arrow_forward' }}</mat-icon>
+              </button>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- My Subscription Tab -->
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <mat-icon>receipt_long</mat-icon>
+        <span>Mon abonnement</span>
+      </ng-template>
+
+      <div class="tab-content" *ngIf="subscription">
+        <div class="section-header">
+          <h2>Votre abonnement</h2>
+          <p>Gérez votre pack et vos add-ons</p>
+        </div>
+
+        <div class="subscription-details">
+          <!-- Current Pack Card -->
+          <mat-card class="subscription-pack" *ngIf="subscription.pack">
+            <div class="pack-badge" [style.background]="subscription.pack.color">
+              <mat-icon>{{ subscription.pack.icon }}</mat-icon>
+            </div>
+            <div class="pack-info">
+              <h3>{{ subscription.pack.name }}</h3>
+              <p>{{ subscription.pack.description }}</p>
+              <div class="pack-meta">
+                <span><mat-icon>event</mat-icon> Depuis le {{ subscription.startDate | date:'dd MMM yyyy' }}</span>
+                <span><mat-icon>payments</mat-icon> {{ formatPrice(subscription.pack.price) }}/mois</span>
+              </div>
+            </div>
+            <button mat-stroked-button color="primary">
+              <mat-icon>upgrade</mat-icon>
+              Changer de pack
+            </button>
+          </mat-card>
+
+          <!-- Active Addons -->
+          <div class="active-addons">
+            <h3>
+              <mat-icon>extension</mat-icon>
+              Add-ons actifs
+              <span class="count">({{ subscription.addons.length }})</span>
+            </h3>
+
+            <div class="addons-list" *ngIf="subscription.addons.length > 0">
+              <mat-card *ngFor="let sub of subscription.addons" class="addon-item">
+                <div class="addon-icon" [style.background]="sub.addon?.color">
+                  <mat-icon>{{ sub.addon?.icon }}</mat-icon>
+                </div>
+                <div class="addon-info">
+                  <h4>{{ sub.addon?.name }}</h4>
+                  <p>{{ sub.addon?.shortDescription }}</p>
+                  <span class="subscribed-date">
+                    <mat-icon>schedule</mat-icon>
+                    Depuis {{ sub.subscribedAt | date:'dd MMM yyyy' }}
+                  </span>
+                </div>
+                <div class="addon-actions">
+                  <span class="price">{{ formatPrice(sub.addon?.price || 0) }}/mois</span>
+                  <button mat-icon-button color="warn" 
+                          matTooltip="Désactiver"
+                          (click)="unsubscribeFromAddon(sub.addon!)">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </mat-card>
+            </div>
+
+            <div class="no-addons" *ngIf="subscription.addons.length === 0">
+              <mat-icon>extension_off</mat-icon>
+              <p>Vous n'avez aucun add-on actif</p>
+              <button mat-stroked-button color="primary">
+                <mat-icon>add</mat-icon>
+                Explorer les add-ons
+              </button>
+            </div>
+          </div>
+
+          <!-- Billing Summary -->
+          <mat-card class="billing-summary">
+            <h3>
+              <mat-icon>receipt</mat-icon>
+              Récapitulatif mensuel
+            </h3>
+            <div class="billing-lines">
+              <div class="billing-line">
+                <span>Pack {{ subscription.pack?.name }}</span>
+                <span>{{ formatPrice(subscription.pack?.price || 0) }}</span>
+              </div>
+              <div class="billing-line" *ngFor="let sub of subscription.addons">
+                <span>{{ sub.addon?.name }}</span>
+                <span>{{ formatPrice(sub.addon?.price || 0) }}</span>
+              </div>
+              <div class="billing-total">
+                <span>Total mensuel</span>
+                <span>{{ formatPrice(subscription.totalMonthlyPrice) }}</span>
+              </div>
+            </div>
+            <div class="next-billing">
+              <mat-icon>event</mat-icon>
+              Prochaine facturation le <strong>{{ subscription.nextBillingDate | date:'dd MMMM yyyy' }}</strong>
+            </div>
+          </mat-card>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>

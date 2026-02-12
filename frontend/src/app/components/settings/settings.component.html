@@ -1,0 +1,75 @@
+<div class="settings-container">
+  <h1><mat-icon>settings</mat-icon> Paramètres</h1>
+
+  <div *ngIf="loading" class="loading-state">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Chargement des paramètres...</p>
+  </div>
+
+  <div *ngIf="!loading" class="settings-grid">
+    <!-- Répertoire surveillé -->
+    <mat-card class="setting-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="setting-icon">folder_open</mat-icon>
+        <mat-card-title>Répertoire Surveillé</mat-card-title>
+        <mat-card-subtitle>Dossier scanné automatiquement pour importer les PDF</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Chemin du répertoire</mat-label>
+          <input matInput [(ngModel)]="watchDir" placeholder="/chemin/vers/le/dossier">
+          <mat-icon matPrefix>folder</mat-icon>
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary" (click)="saveSetting('watch_directory', watchDir)"
+                [disabled]="savingKey === 'watch_directory'">
+          <mat-spinner diameter="18" *ngIf="savingKey === 'watch_directory'"></mat-spinner>
+          <mat-icon *ngIf="savingKey !== 'watch_directory'">save</mat-icon>
+          Enregistrer
+        </button>
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Import automatique -->
+    <mat-card class="setting-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="setting-icon">schedule</mat-icon>
+        <mat-card-title>Import Automatique</mat-card-title>
+        <mat-card-subtitle>Active le scan automatique du répertoire surveillé</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-slide-toggle
+          [(ngModel)]="schedulerEnabled"
+          color="primary"
+          (change)="saveSetting('scheduler_enabled', schedulerEnabled ? 'true' : 'false')">
+          {{ schedulerEnabled ? 'Activé' : 'Désactivé' }}
+        </mat-slide-toggle>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Nom de l'hôpital -->
+    <mat-card class="setting-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar class="setting-icon">local_hospital</mat-icon>
+        <mat-card-title>Nom de l'Établissement</mat-card-title>
+        <mat-card-subtitle>Affiché dans l'interface et les emails</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom de l'hôpital</mat-label>
+          <input matInput [(ngModel)]="hospitalName" placeholder="Hôpital Général de Douala">
+          <mat-icon matPrefix>business</mat-icon>
+        </mat-form-field>
+      </mat-card-content>
+      <mat-card-actions align="end">
+        <button mat-raised-button color="primary" (click)="saveSetting('hospital_name', hospitalName)"
+                [disabled]="savingKey === 'hospital_name'">
+          <mat-spinner diameter="18" *ngIf="savingKey === 'hospital_name'"></mat-spinner>
+          <mat-icon *ngIf="savingKey !== 'hospital_name'">save</mat-icon>
+          Enregistrer
+        </button>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>

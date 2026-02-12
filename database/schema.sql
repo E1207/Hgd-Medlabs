@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS patient_results (
     patient_birthdate DATE,
     patient_email VARCHAR(255),
     patient_phone VARCHAR(20),
-    pdf_file_path VARCHAR(500) NOT NULL,
+    pdf_file_path VARCHAR(500),  -- Nullable: stockage en BD avec pdf_content
     pdf_file_name VARCHAR(255) NOT NULL,
     status VARCHAR(20) NOT NULL CHECK (status IN ('IMPORTED', 'COMPLETED', 'SENT', 'RECEIVED', 'OPENED')),
     access_code_hash VARCHAR(255),

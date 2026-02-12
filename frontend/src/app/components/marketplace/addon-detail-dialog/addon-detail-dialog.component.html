@@ -1,0 +1,76 @@
+<div class="addon-detail-dialog">
+  <div class="addon-header" [style.background]="data.addon.color">
+    <div class="addon-icon">
+      <mat-icon>{{ data.addon.icon }}</mat-icon>
+    </div>
+    <div class="addon-title">
+      <h2>{{ data.addon.name }}</h2>
+      <span class="category">{{ getCategoryLabel(data.addon.category) }}</span>
+    </div>
+    <div class="badges">
+      <span class="badge new" *ngIf="data.addon.isNew">Nouveau</span>
+      <span class="badge popular" *ngIf="data.addon.popular">Populaire</span>
+      <span class="badge subscribed" *ngIf="data.isSubscribed">
+        <mat-icon>check_circle</mat-icon>
+        Actif
+      </span>
+    </div>
+  </div>
+
+  <mat-dialog-content>
+    <div class="addon-description">
+      <p>{{ data.addon.fullDescription }}</p>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="addon-features">
+      <h3>
+        <mat-icon>auto_awesome</mat-icon>
+        Fonctionnalités incluses
+      </h3>
+      <ul>
+        <li *ngFor="let feature of data.addon.features">
+          <mat-icon>check_circle</mat-icon>
+          {{ feature }}
+        </li>
+      </ul>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="pricing-section">
+      <div class="price-display">
+        <span class="price">{{ formatPrice(data.addon.price) }}</span>
+        <span class="period">{{ getBillingLabel() }}</span>
+      </div>
+      <p class="billing-note" *ngIf="data.addon.billingType === 'MONTHLY'">
+        Facturation mensuelle. Annulable à tout moment.
+      </p>
+      <p class="billing-note" *ngIf="data.addon.billingType === 'ONE_TIME'">
+        Paiement unique. Pas d'abonnement récurrent.
+      </p>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions>
+    <button mat-button (click)="close()">Fermer</button>
+    
+    <button mat-raised-button 
+            *ngIf="!data.isSubscribed"
+            [style.background]="data.addon.color"
+            style="color: white"
+            (click)="subscribe()">
+      <mat-icon>add_circle</mat-icon>
+      Ajouter à mon abonnement
+    </button>
+
+    <button mat-stroked-button 
+            color="warn"
+            *ngIf="data.isSubscribed"
+            (click)="unsubscribe()">
+      <mat-icon>remove_circle</mat-icon>
+      Désactiver
+    </button>
+  </mat-dialog-actions>
+</div>

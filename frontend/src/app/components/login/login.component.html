@@ -1,25 +1,20 @@
-<div class="login-container">
+<div class="login-container" [style.--service-color]="config.color">
   <div class="login-content">
     <!-- Left side - Branding -->
-    <div class="login-branding">
+    <div class="login-branding" [style.background]="config.gradient">
+      <button mat-icon-button class="back-btn" (click)="goToHome()" matTooltip="Retour à l'accueil">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
       <div class="brand-content">
         <div class="brand-logo">
-          <mat-icon>biotech</mat-icon>
+          <mat-icon>{{ config.icon }}</mat-icon>
         </div>
-        <h1>MedLab</h1>
-        <p class="brand-tagline">Système de Gestion des Résultats de Laboratoire</p>
+        <h1>{{ config.name }}</h1>
+        <p class="brand-tagline">{{ config.tagline }}</p>
         <div class="brand-features">
-          <div class="feature">
-            <mat-icon>speed</mat-icon>
-            <span>Résultats en temps réel</span>
-          </div>
-          <div class="feature">
-            <mat-icon>security</mat-icon>
-            <span>Données sécurisées</span>
-          </div>
-          <div class="feature">
-            <mat-icon>notifications_active</mat-icon>
-            <span>Notifications automatiques</span>
+          <div class="feature" *ngFor="let feature of config.features">
+            <mat-icon>{{ feature.icon }}</mat-icon>
+            <span>{{ feature.text }}</span>
           </div>
         </div>
         <div class="hospital-badge">

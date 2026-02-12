@@ -378,17 +378,28 @@ public class PatientResultService {
      * Supprime un résultat
      */
     @Transactional
-    public void deleteResult(UUID id) throws IOException {
+    public void deleteResult(UUID id) {
         log.info("Suppression du résultat: {}", id);
 
         PatientResult result = patientResultRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Résultat non trouvé avec l'ID: " + id));
 
-        // Supprimer le fichier PDF
-        fileService.deleteFile(result.getPdfFilePath());
+        try {
+            // Supprimer le fichier PDF (ignorer l'erreur si le fichier n'existe pas)
+            if (result.getPdfFilePath() != null) {
+                fileService.deleteFile(result.getPdfFilePath());
+            }
+        } catch (Exception e) {
+            log.warn("Impossible de supprimer le fichier PDF: {} - {}", result.getPdfFilePath(), e.getMessage());
+            // Continuer même si le fichier n'existe pas
+        }
 
         // Supprimer les logs d'accès
-        accessLogRepository.deleteAll(accessLogRepository.findByPatientResult(result));
+        try {
+            accessLogRepository.deleteAll(accessLogRepository.findByPatientResult(result));
+        } catch (Exception e) {
+            log.warn("Erreur lors de la suppression des logs d'accès: {}", e.getMessage());
+        }
 
         // Supprimer le résultat
         patientResultRepository.delete(result);
@@ -420,13 +431,52 @@ public class PatientResultService {
             statusDistribution.put(status.name(), count);
         }
 
+        // Statistiques hebdomadaires (7 derniers jours)
+        List<DashboardStatsResponse.DailyStats> weeklyStats = calculateWeeklyStats();
+
         return DashboardStatsResponse.builder()
                 .totalResults(totalResults)
                 .resultsSentToday(resultsSentToday)
                 .resultsAwaitingCompletion(resultsAwaitingCompletion)
                 .openRate(openRate)
                 .statusDistribution(statusDistribution)
+                .weeklyStats(weeklyStats)
                 .build();
+    }
+
+    /**
+     * Calcule les statistiques pour les 7 derniers jours
+     */
+    private List<DashboardStatsResponse.DailyStats> calculateWeeklyStats() {
+        List<DashboardStatsResponse.DailyStats> stats = new ArrayList<>();
+        String[] dayNames = {"Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"};
+        
+        LocalDate today = LocalDate.now();
+        
+        for (int i = 6; i >= 0; i--) {
+            LocalDate date = today.minusDays(i);
+            LocalDateTime startOfDay = date.atStartOfDay();
+            LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
+            
+            Long importedCount = patientResultRepository.countCreatedBetween(startOfDay, endOfDay);
+            Long sentCount = patientResultRepository.countSentBetween(startOfDay, endOfDay);
+            Long openedCount = patientResultRepository.countOpenedBetween(startOfDay, endOfDay);
+            
+            // Calculer le taux d'ouverture du jour
+            Double dailyOpenRate = sentCount > 0 ? (openedCount.doubleValue() / sentCount.doubleValue()) * 100 : 0.0;
+            
+            String dayLabel = dayNames[date.getDayOfWeek().getValue() % 7] + " " + date.getDayOfMonth();
+            
+            stats.add(DashboardStatsResponse.DailyStats.builder()
+                    .date(date.toString())
+                    .dayLabel(dayLabel)
+                    .importedCount(importedCount)
+                    .sentCount(sentCount)
+                    .openRate(dailyOpenRate)
+                    .build());
+        }
+        
+        return stats;
     }
 
     /**

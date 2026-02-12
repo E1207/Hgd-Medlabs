@@ -1,0 +1,131 @@
+<div class="verification-container">
+  <mat-card class="verification-card">
+    <mat-card-header>
+      <div class="logo">
+        <mat-icon class="hospital-icon">local_hospital</mat-icon>
+      </div>
+      <mat-card-title>Consultation Sécurisée</mat-card-title>
+      <mat-card-subtitle>Hôpital Général de Douala - MedLab</mat-card-subtitle>
+    </mat-card-header>
+
+    <!-- ÉTAPE 1: Demande OTP WhatsApp -->
+    <mat-card-content *ngIf="step === 'request-otp'">
+      <div class="step-header">
+        <mat-icon class="whatsapp-icon">smartphone</mat-icon>
+        <h3>Vérification par WhatsApp</h3>
+      </div>
+      
+      <p class="info-text">
+        Pour accéder à vos résultats médicaux, un code de vérification sera envoyé 
+        à votre numéro WhatsApp.
+      </p>
+      
+      <div class="patient-info" *ngIf="resultInfo">
+        <p><strong>Référence:</strong> {{ resultInfo.referenceDossier }}</p>
+        <p><strong>Patient:</strong> {{ resultInfo.patientFirstName }} {{ resultInfo.patientLastName }}</p>
+      </div>
+
+      <button mat-raised-button color="primary" class="full-width whatsapp-btn"
+              (click)="requestOtp()" [disabled]="loading">
+        <mat-icon *ngIf="!loading">send</mat-icon>
+        <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+        <span *ngIf="!loading">Recevoir le code par WhatsApp</span>
+        <span *ngIf="loading">Envoi en cours...</span>
+      </button>
+    </mat-card-content>
+
+    <!-- ÉTAPE 2: Saisie du code OTP -->
+    <mat-card-content *ngIf="step === 'verify-otp'">
+      <div class="step-header">
+        <mat-icon class="otp-icon">lock</mat-icon>
+        <h3>Saisir le code</h3>
+      </div>
+      
+      <p class="info-text">
+        Un code à 6 chiffres a été envoyé au numéro 
+        <strong>{{ maskedPhone }}</strong>
+      </p>
+      
+      <form [formGroup]="otpForm" (ngSubmit)="verifyOtp()">
+        <mat-form-field appearance="outline" class="full-width otp-field">
+          <mat-label>Code de vérification</mat-label>
+          <input matInput formControlName="otpCode" maxlength="6" 
+                 placeholder="000000" autocomplete="one-time-code"
+                 inputmode="numeric" pattern="[0-9]*">
+          <mat-icon matPrefix>dialpad</mat-icon>
+          <mat-hint>Code valide pendant {{ otpExpiresIn }} minutes</mat-hint>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" class="full-width"
+                [disabled]="loading || !otpForm.valid">
+          <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+          <span *ngIf="!loading">Vérifier le code</span>
+          <span *ngIf="loading">Vérification...</span>
+        </button>
+      </form>
+
+      <div class="resend-section">
+        <p>Code non reçu ?</p>
+        <button mat-button color="accent" (click)="resendOtp()" 
+                [disabled]="resendDisabled || loading">
+          <mat-icon>refresh</mat-icon>
+          Renvoyer le code {{ resendDisabled ? '(' + resendCountdown + 's)' : '' }}
+        </button>
+      </div>
+    </mat-card-content>
+
+    <!-- ÉTAPE 3: Accès au PDF -->
+    <mat-card-content *ngIf="step === 'success'">
+      <div class="success-message">
+        <mat-icon class="success-icon">check_circle</mat-icon>
+        <h2>Vérification réussie !</h2>
+      </div>
+
+      <div class="result-info">
+        <p><strong>Référence:</strong> {{ resultInfo?.referenceDossier }}</p>
+        <p><strong>Patient:</strong> {{ resultInfo?.patientFirstName }} {{ resultInfo?.patientLastName }}</p>
+        <p *ngIf="resultInfo?.patientBirthdate">
+          <strong>Date de naissance:</strong> {{ resultInfo?.patientBirthdate | date:'dd/MM/yyyy' }}
+        </p>
+      </div>
+
+      <div class="pdf-actions">
+        <button mat-raised-button color="primary" class="full-width" (click)="viewPdf()">
+          <mat-icon>visibility</mat-icon>
+          Voir le résultat
+        </button>
+        
+        <button mat-stroked-button color="primary" class="full-width" (click)="downloadPdf()">
+          <mat-icon>download</mat-icon>
+          Télécharger le PDF
+        </button>
+      </div>
+    </mat-card-content>
+
+    <!-- ERREUR: Pas de numéro de téléphone -->
+    <mat-card-content *ngIf="step === 'no-phone'">
+      <div class="error-message">
+        <mat-icon class="error-icon">error</mat-icon>
+        <h3>Vérification impossible</h3>
+        <p>Aucun numéro de téléphone n'est associé à ce résultat.</p>
+        <p>Veuillez contacter le laboratoire de l'Hôpital Général de Douala.</p>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>🔒 Vos données sont protégées par chiffrement AES-256</p>
+    <p>© 2024 MedLab - Hôpital Général de Douala</p>
+  </div>
+</div>
+
+<!-- Modal PDF Viewer -->
+<div class="pdf-modal" *ngIf="showPdfViewer" (click)="closePdfViewer()">
+  <div class="pdf-modal-content" (click)="$event.stopPropagation()">
+    <button mat-icon-button class="close-btn" (click)="closePdfViewer()">
+      <mat-icon>close</mat-icon>
+    </button>
+    <iframe [src]="pdfUrl" class="pdf-viewer"></iframe>
+  </div>
+</div>

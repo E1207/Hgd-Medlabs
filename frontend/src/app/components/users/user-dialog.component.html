@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>
+  <mat-icon>{{ data.user ? 'edit' : 'person_add' }}</mat-icon>
+  {{ data.user ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}
+</h2>
+<mat-dialog-content>
+  <form [formGroup]="form">
+    <div class="form-row">
+      <mat-form-field appearance="outline">
+        <mat-label>Nom</mat-label>
+        <input matInput formControlName="lastName" placeholder="DUPONT">
+        <mat-icon matPrefix>badge</mat-icon>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Prénom</mat-label>
+        <input matInput formControlName="firstName" placeholder="Jean">
+        <mat-icon matPrefix>person</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" placeholder="jean.dupont@hgd.cm">
+      <mat-icon matPrefix>email</mat-icon>
+      <mat-error *ngIf="form.get('email')?.hasError('email')">Email invalide</mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width" *ngIf="!data.user">
+      <mat-label>Mot de passe</mat-label>
+      <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+      <mat-icon matPrefix>lock</mat-icon>
+      <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+        <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+      </button>
+      <mat-hint>Minimum 6 caractères</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Rôle</mat-label>
+      <mat-select formControlName="role">
+        <mat-option value="TECHNICIEN">
+          <mat-icon>biotech</mat-icon> Technicien de laboratoire
+        </mat-option>
+        <mat-option value="ADMIN">
+          <mat-icon>admin_panel_settings</mat-icon> Administrateur
+        </mat-option>
+      </mat-select>
+      <mat-icon matPrefix>work</mat-icon>
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="isActive" color="primary" *ngIf="data.user">
+      Compte actif
+    </mat-slide-toggle>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button mat-stroked-button mat-dialog-close>Annuler</button>
+  <button mat-raised-button color="primary" (click)="save()" 
+          [disabled]="!form.valid || saving">
+    <mat-spinner diameter="18" *ngIf="saving"></mat-spinner>
+    <mat-icon *ngIf="!saving">{{ data.user ? 'save' : 'person_add' }}</mat-icon>
+    {{ saving ? 'En cours...' : (data.user ? 'Enregistrer' : 'Créer') }}
+  </button>
+</mat-dialog-actions>

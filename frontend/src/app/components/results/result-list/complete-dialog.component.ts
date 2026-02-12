@@ -27,66 +27,8 @@ import { PatientResult } from '../../../models/patient-result.model';
     MatProgressSpinnerModule,
     MatCheckboxModule
   ],
-  template: `
-    <h2 mat-dialog-title>
-      <mat-icon>edit_note</mat-icon>
-      Compléter le dossier {{ data.result.referenceDossier }}
-    </h2>
-    <mat-dialog-content>
-      <form [formGroup]="form">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Nom du patient</mat-label>
-          <input matInput formControlName="patientLastName">
-          <mat-icon matPrefix>person</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Prénom du patient</mat-label>
-          <input matInput formControlName="patientFirstName">
-          <mat-icon matPrefix>person</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Date de naissance</mat-label>
-          <input matInput type="date" formControlName="patientBirthdate">
-          <mat-icon matPrefix>cake</mat-icon>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email du patient</mat-label>
-          <input matInput type="email" formControlName="patientEmail" placeholder="patient@email.com">
-          <mat-icon matPrefix>email</mat-icon>
-          <mat-error *ngIf="form.get('patientEmail')?.hasError('email')">Format invalide</mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Téléphone</mat-label>
-          <input matInput formControlName="patientPhone" placeholder="+237XXXXXXXXX">
-          <mat-icon matPrefix>phone</mat-icon>
-        </mat-form-field>
-
-        <mat-checkbox formControlName="sendAfterComplete" color="primary">
-          Envoyer au patient après complétion
-        </mat-checkbox>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions align="end">
-      <button mat-stroked-button mat-dialog-close>Annuler</button>
-      <button mat-raised-button color="primary" (click)="onComplete()"
-              [disabled]="loading || !form.get('referenceDossier')?.value">
-        <mat-spinner diameter="18" *ngIf="loading"></mat-spinner>
-        <mat-icon *ngIf="!loading">check</mat-icon>
-        {{ loading ? 'En cours...' : 'Compléter et Enregistrer' }}
-      </button>
-    </mat-dialog-actions>
-  `,
-  styles: [`
-    h2 { display: flex; align-items: center; gap: 8px; }
-    .full-width { width: 100%; }
-    mat-dialog-content { min-width: 400px; }
-    mat-checkbox { display: block; margin: 12px 0; }
-    mat-spinner { display: inline-block; margin-right: 6px; }
-  `]
+  templateUrl: './complete-dialog.component.html',
+  styleUrls: ['./complete-dialog.component.scss']
 })
 export class CompleteDialogComponent {
   form: FormGroup;

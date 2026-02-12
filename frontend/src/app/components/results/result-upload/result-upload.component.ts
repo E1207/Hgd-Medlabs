@@ -29,149 +29,8 @@ import { PatientResultService } from '../../../services/patient-result.service';
     MatCheckboxModule,
     MatProgressBarModule
   ],
-  template: `
-    <div class="upload-container">
-      <mat-card>
-        <mat-card-header>
-          <mat-card-title>
-            <mat-icon>upload_file</mat-icon>
-            Nouveau Résultat
-          </mat-card-title>
-          <mat-card-subtitle>Importez le PDF — les champs seront remplis automatiquement</mat-card-subtitle>
-        </mat-card-header>
-        <mat-card-content>
-          <div class="drop-zone" 
-               [class.has-file]="selectedFile"
-               [class.extracting]="extracting"
-               (click)="fileInput.click()"
-               (dragover)="onDragOver($event)"
-               (dragleave)="onDragLeave($event)"
-               (drop)="onDrop($event)">
-            <mat-icon class="upload-icon" *ngIf="!selectedFile && !extracting">cloud_upload</mat-icon>
-            <mat-spinner diameter="48" *ngIf="extracting"></mat-spinner>
-            <mat-icon class="upload-icon success" *ngIf="selectedFile && !extracting">check_circle</mat-icon>
-            <p *ngIf="!selectedFile && !extracting">Glissez-déposez le PDF ici ou cliquez pour parcourir</p>
-            <p *ngIf="extracting">Analyse du PDF en cours...</p>
-            <p class="file-name" *ngIf="selectedFile && !extracting">
-              <mat-icon>description</mat-icon>
-              {{ selectedFile.name }} ({{ formatFileSize(selectedFile.size) }})
-            </p>
-            <p class="extract-info" *ngIf="extractedInfo && !extracting">
-              <mat-icon>auto_fix_high</mat-icon> Champs remplis automatiquement depuis le PDF
-            </p>
-            <input #fileInput type="file" accept=".pdf" (change)="onFileSelected($event)" hidden>
-          </div>
-
-          <form [formGroup]="resultForm" (ngSubmit)="onSubmit()">
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Référence Dossier / Code Patient</mat-label>
-              <input matInput formControlName="referenceDossier" placeholder="Ex: 2601122170">
-              <mat-icon matPrefix>tag</mat-icon>
-              <mat-error *ngIf="resultForm.get('referenceDossier')?.hasError('required')">
-                La référence est obligatoire
-              </mat-error>
-            </mat-form-field>
-
-            <div class="form-row">
-              <mat-form-field appearance="outline">
-                <mat-label>Nom du patient</mat-label>
-                <input matInput formControlName="patientLastName">
-                <mat-icon matPrefix>person</mat-icon>
-              </mat-form-field>
-              <mat-form-field appearance="outline">
-                <mat-label>Prénom du patient</mat-label>
-                <input matInput formControlName="patientFirstName">
-                <mat-icon matPrefix>person</mat-icon>
-              </mat-form-field>
-            </div>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Date de Naissance</mat-label>
-              <input matInput type="date" formControlName="patientBirthdate">
-              <mat-icon matPrefix>cake</mat-icon>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Email du patient</mat-label>
-              <input matInput type="email" formControlName="patientEmail" placeholder="patient&#64;email.com">
-              <mat-icon matPrefix>email</mat-icon>
-              <mat-error *ngIf="resultForm.get('patientEmail')?.hasError('email')">
-                Format d'email invalide
-              </mat-error>
-            </mat-form-field>
-
-            <mat-form-field appearance="outline" class="full-width">
-              <mat-label>Téléphone Mobile</mat-label>
-              <input matInput formControlName="patientPhone" placeholder="+237XXXXXXXXX">
-              <mat-icon matPrefix>phone</mat-icon>
-            </mat-form-field>
-
-            <mat-checkbox formControlName="sendImmediately" color="primary" class="send-checkbox">
-              Envoyer immédiatement au patient après upload
-            </mat-checkbox>
-
-            <div class="actions">
-              <button mat-stroked-button type="button" (click)="goBack()">
-                <mat-icon>arrow_back</mat-icon>
-                Annuler
-              </button>
-              <button mat-raised-button color="primary" type="submit" 
-                      [disabled]="loading || !resultForm.valid || !selectedFile">
-                <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
-                <mat-icon *ngIf="!loading">upload</mat-icon>
-                <span *ngIf="!loading">Enregistrer</span>
-                <span *ngIf="loading">Envoi en cours...</span>
-              </button>
-            </div>
-          </form>
-        </mat-card-content>
-      </mat-card>
-    </div>
-  `,
-  styles: [`
-    .upload-container { max-width: 800px; margin: 0 auto; }
-    mat-card-header { margin-bottom: 24px; }
-    mat-card-title { display: flex; align-items: center; gap: 12px; font-size: 22px !important; }
-    .drop-zone {
-      border: 2px dashed #ccc;
-      border-radius: 12px;
-      padding: 40px;
-      text-align: center;
-      cursor: pointer;
-      margin-bottom: 30px;
-      transition: all 0.3s;
-      background-color: #fafafa;
-    }
-    .drop-zone:hover, .drop-zone.dragover { 
-      border-color: #1565c0; 
-      background-color: #e3f2fd; 
-    }
-    .drop-zone.has-file {
-      border-color: #4CAF50;
-      background-color: #E8F5E9;
-    }
-    .drop-zone.extracting {
-      border-color: #FF9800;
-      background-color: #FFF3E0;
-    }
-    .upload-icon { 
-      font-size: 64px; width: 64px; height: 64px; color: #1565c0; 
-    }
-    .upload-icon.success { color: #4CAF50; }
-    .file-name { 
-      color: #4CAF50; font-weight: 500; margin-top: 10px; 
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-    }
-    .extract-info {
-      color: #1565C0; font-size: 13px; margin-top: 8px;
-      display: flex; align-items: center; justify-content: center; gap: 6px;
-    }
-    .full-width { width: 100%; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-    .send-checkbox { margin: 16px 0; display: block; }
-    .actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; }
-    mat-spinner { display: inline-block; margin-right: 8px; }
-  `]
+  templateUrl: './result-upload.component.html',
+  styleUrls: ['./result-upload.component.scss']
 })
 export class ResultUploadComponent {
   resultForm: FormGroup;
@@ -298,15 +157,15 @@ export class ResultUploadComponent {
             this.resultService.sendResult(result.id).subscribe({
               next: () => {
                 this.snackBar.open('Résultat envoyé au patient!', 'Fermer', { duration: 3000 });
-                this.router.navigate(['/results']);
+                this.router.navigate(['/medlabs/results']);
               },
               error: () => {
                 this.snackBar.open('Résultat enregistré mais erreur lors de l\'envoi email', 'Fermer', { duration: 5000 });
-                this.router.navigate(['/results']);
+                this.router.navigate(['/medlabs/results']);
               }
             });
           } else {
-            this.router.navigate(['/results']);
+            this.router.navigate(['/medlabs/results']);
           }
         },
         error: (err) => {
@@ -322,6 +181,6 @@ export class ResultUploadComponent {
   }
 
   goBack(): void {
-    this.router.navigate(['/results']);
+    this.router.navigate(['/medlabs/results']);
   }
 }
