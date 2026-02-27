@@ -71,11 +71,12 @@ medlab:
     base-url: ${FRONTEND_URL:https://medlab-frontend.railway.app}
   
   # Configuration WhatsApp Business API (Meta Cloud)
+  # Désactivé par défaut en prod si non configuré
   whatsapp:
-    enabled: ${WHATSAPP_ENABLED:true}
+    enabled: ${WHATSAPP_ENABLED:false}
     api-url: https://graph.facebook.com/v18.0
-    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID}
-    access-token: ${WHATSAPP_ACCESS_TOKEN}
+    phone-number-id: ${WHATSAPP_PHONE_NUMBER_ID:}
+    access-token: ${WHATSAPP_ACCESS_TOKEN:}
     otp-validity-minutes: 10
   
   # Configuration CORS
