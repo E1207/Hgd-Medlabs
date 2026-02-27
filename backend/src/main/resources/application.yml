@@ -45,8 +45,11 @@ spring:
 server:
   port: 8080
   error:
-    include-message: always
-    include-binding-errors: always
+    # NE JAMAIS exposer les détails des erreurs (même en dev)
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
 
 # Configuration MedLab
 medlab:
@@ -66,13 +69,13 @@ medlab:
     archive-enabled: ${ARCHIVE_ENABLED:false}
   
   security:
-    jwt-secret: ${JWT_SECRET:HgdMedLabsSecretKeyForJwtTokenGeneration2026SecureKey256bits}
+    # IMPORTANT: Ces valeurs DOIVENT être définies dans le fichier .env (jamais en dur ici!)
+    jwt-secret: ${JWT_SECRET:}
     jwt-expiration: 86400000 # 24 heures en millisecondes
     access-code-length: 8
     max-access-attempts: 5
-    # Clé de chiffrement AES-256 pour les PDFs (OBLIGATOIRE en production!)
-    # Minimum 32 caractères pour une sécurité optimale
-    encryption-key: ${ENCRYPTION_KEY:HgdMedLabsDefaultEncryptionKey32}
+    # Clé de chiffrement AES-256 pour les PDFs
+    encryption-key: ${ENCRYPTION_KEY:}
   
   email:
     from: ${EMAIL_FROM:}

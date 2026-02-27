@@ -46,6 +46,10 @@ export interface DashboardStats {
   openRate: number;
   statusDistribution: { [key: string]: number };
   weeklyStats?: DailyStats[];
+  // Navigation de période
+  weekOffset?: number;      // 0 = semaine actuelle, 1 = semaine précédente
+  periodStart?: string;     // Date de début (YYYY-MM-DD)
+  periodEnd?: string;       // Date de fin (YYYY-MM-DD)
 }
 
 export interface DailyStats {

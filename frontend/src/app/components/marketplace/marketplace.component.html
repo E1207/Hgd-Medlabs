@@ -3,12 +3,12 @@
   <div class="stats-header" *ngIf="stats">
     <div class="stats-cards">
       <mat-card class="stat-card current-plan">
-        <div class="stat-icon" [style.background]="stats.currentPack?.color || '#3b82f6'">
-          <mat-icon>{{ stats.currentPack?.icon || 'workspace_premium' }}</mat-icon>
+        <div class="stat-icon" [style.background]="stats.currentPack.color || '#3b82f6'">
+          <mat-icon>{{ stats.currentPack.icon || 'workspace_premium' }}</mat-icon>
         </div>
         <div class="stat-content">
           <span class="stat-label">Pack actuel</span>
-          <span class="stat-value">{{ stats.currentPack?.name }}</span>
+          <span class="stat-value">{{ stats.currentPack.name }}</span>
         </div>
       </mat-card>
 

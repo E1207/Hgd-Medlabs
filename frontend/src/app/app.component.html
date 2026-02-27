@@ -116,11 +116,23 @@
         </div>
 
         <!-- Add-ons actifs (apparaissent après achat) -->
-        <div class="nav-group" *ngIf="isAdmin && isBrandingActive">
+        <div class="nav-group" *ngIf="isAdmin && (isBrandingActive || isAnalyticsProActive || isAuditTrailActive || is2FAActive)">
           <span class="nav-group-label">Add-ons</span>
-          <a routerLink="/medlabs/branding" routerLinkActive="active" class="nav-item branding-item">
+          <a routerLink="/medlabs/branding" routerLinkActive="active" class="nav-item branding-item" *ngIf="isBrandingActive">
             <div class="nav-icon"><mat-icon>palette</mat-icon></div>
             <span>Branding</span>
+          </a>
+          <a routerLink="/medlabs/analytics" routerLinkActive="active" class="nav-item analytics-item" *ngIf="isAnalyticsProActive">
+            <div class="nav-icon"><mat-icon>insights</mat-icon></div>
+            <span>Analytics Pro</span>
+          </a>
+          <a routerLink="/medlabs/audit" routerLinkActive="active" class="nav-item audit-item" *ngIf="isAuditTrailActive">
+            <div class="nav-icon"><mat-icon>history</mat-icon></div>
+            <span>Audit Trail</span>
+          </a>
+          <a routerLink="/medlabs/security" routerLinkActive="active" class="nav-item security-item" *ngIf="is2FAActive">
+            <div class="nav-icon"><mat-icon>security</mat-icon></div>
+            <span>Sécurité 2FA</span>
           </a>
         </div>
       </nav>

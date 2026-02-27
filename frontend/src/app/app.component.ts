@@ -40,6 +40,9 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'SIL - HGD';
   currentService: 'home' | 'medlabs' | 'medradio' | null = null;
   isBrandingActive = false;
+  isAnalyticsProActive = false;
+  isAuditTrailActive = false;
+  is2FAActive = false;
   brandingConfig: BrandingConfig | null = null;
   private subscriptionWatcher?: Subscription;
   private brandingWatcher?: Subscription;
@@ -61,9 +64,12 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // Watch for subscription changes to update branding status
+    // Watch for subscription changes to update add-on statuses
     this.subscriptionWatcher = this.marketplaceService.watchSubscription().subscribe(() => {
       this.isBrandingActive = this.marketplaceService.isBrandingActive();
+      this.isAnalyticsProActive = this.marketplaceService.isAnalyticsProActive();
+      this.isAuditTrailActive = this.marketplaceService.isAuditTrailActive();
+      this.is2FAActive = this.marketplaceService.is2FAActive();
       // Appliquer le branding si l'add-on est actif
       if (this.isBrandingActive) {
         this.loadAndApplyBranding();

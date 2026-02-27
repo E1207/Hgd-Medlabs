@@ -24,4 +24,8 @@ public class LoginResponse {
     private String firstName;
     private String lastName;
     private UserRole role;
+    
+    // Champs pour 2FA
+    private Boolean requires2FA;
+    private String sessionToken;  // Token temporaire pour valider le 2FA
 }

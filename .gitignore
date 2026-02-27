@@ -27,6 +27,19 @@ backups/
 .env.production
 .env.*.local
 *.env
+.envrc
+
+# Scripts de démarrage avec secrets
+start-backend.sh
+
+# Fichiers de configuration secrets
+secrets/
+**/secrets/
+*.pem
+*.key
+*.crt
+*.p12
+*.jks
 
 # ========================
 # JAVA / MAVEN
@@ -63,6 +76,7 @@ yarn-error.log*
 *.tmp
 *.temp
 *.bak
+*.zip
 Thumbs.db
 .DS_Store
 

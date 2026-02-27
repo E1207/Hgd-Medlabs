@@ -26,6 +26,11 @@ public class DashboardStatsResponse {
     // Statistiques hebdomadaires
     private List<DailyStats> weeklyStats;
     
+    // Navigation de période
+    private Integer weekOffset;       // 0 = semaine actuelle, 1 = semaine précédente, etc.
+    private String periodStart;       // Date de début de la période (format YYYY-MM-DD)
+    private String periodEnd;         // Date de fin de la période (format YYYY-MM-DD)
+    
     @Data
     @NoArgsConstructor
     @AllArgsConstructor

@@ -27,59 +27,113 @@
     <!-- Right side - Login Form -->
     <div class="login-form-section">
       <mat-card class="login-card">
-        <div class="card-header">
-          <h2>Connexion</h2>
-          <p>Bienvenue ! Connectez-vous pour accéder au système.</p>
-        </div>
+        <!-- Login Form (étape 1) -->
+        <ng-container *ngIf="!requires2FA">
+          <div class="card-header">
+            <h2>Connexion</h2>
+            <p>Bienvenue ! Connectez-vous pour accéder au système.</p>
+          </div>
 
-        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Adresse email</mat-label>
-            <input matInput type="email" formControlName="email" autocomplete="email" placeholder="nom@hopital.cm">
-            <mat-icon matPrefix>mail_outline</mat-icon>
-            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
-              L'email est requis
-            </mat-error>
-            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
-              Veuillez entrer un email valide
-            </mat-error>
-          </mat-form-field>
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Adresse email</mat-label>
+              <input matInput type="email" formControlName="email" autocomplete="email" placeholder="nom@hopital.cm">
+              <mat-icon matPrefix>mail_outline</mat-icon>
+              <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+                L'email est requis
+              </mat-error>
+              <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+                Veuillez entrer un email valide
+              </mat-error>
+            </mat-form-field>
 
-          <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Mot de passe</mat-label>
-            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="current-password" placeholder="••••••••">
-            <mat-icon matPrefix>lock_outline</mat-icon>
-            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button" tabindex="-1">
-              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Mot de passe</mat-label>
+              <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" autocomplete="current-password" placeholder="••••••••">
+              <mat-icon matPrefix>lock_outline</mat-icon>
+              <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button" tabindex="-1">
+                <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+              </button>
+              <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+                Le mot de passe est requis
+              </mat-error>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" type="submit" class="login-button" [disabled]="loading || !loginForm.valid">
+              <span *ngIf="!loading">Se connecter</span>
+              <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
             </button>
-            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
-              Le mot de passe est requis
-            </mat-error>
-          </mat-form-field>
+          </form>
 
-          <button mat-flat-button color="primary" type="submit" class="login-button" [disabled]="loading || !loginForm.valid">
-            <span *ngIf="!loading">Se connecter</span>
-            <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-          </button>
-        </form>
+          <div class="demo-credentials">
+            <div class="demo-header">
+              <mat-icon>info</mat-icon>
+              <span>Identifiants de démonstration</span>
+            </div>
+            <div class="demo-items">
+              <div class="demo-item">
+                <span class="demo-role">Admin</span>
+                <code>admin&#64;medlab.hgd.cm</code>
+              </div>
+              <div class="demo-item">
+                <span class="demo-role">Technicien</span>
+                <code>technicien1&#64;medlab.hgd.cm</code>
+              </div>
+            </div>
+            <div class="demo-password">Mot de passe : <code>medlab123</code></div>
+          </div>
+        </ng-container>
 
-        <div class="demo-credentials">
-          <div class="demo-header">
-            <mat-icon>info</mat-icon>
-            <span>Identifiants de démonstration</span>
-          </div>
-          <div class="demo-items">
-            <div class="demo-item">
-              <span class="demo-role">Admin</span>
-              <code>admin&#64;medlab.hgd.cm</code>
+        <!-- 2FA Verification (étape 2) -->
+        <ng-container *ngIf="requires2FA">
+          <div class="card-header twofa-header">
+            <div class="twofa-icon">
+              <mat-icon>security</mat-icon>
             </div>
-            <div class="demo-item">
-              <span class="demo-role">Technicien</span>
-              <code>technicien1&#64;medlab.hgd.cm</code>
-            </div>
+            <h2>Vérification en 2 étapes</h2>
+            <p>Un code de vérification a été envoyé à<br><strong>{{ userEmail }}</strong></p>
           </div>
-          <div class="demo-password">Mot de passe : <code>medlab123</code></div>
-        </div>
+
+          <form [formGroup]="otpForm" (ngSubmit)="onVerify2FA()">
+            <mat-form-field appearance="outline" class="full-width otp-field">
+              <mat-label>Code de vérification</mat-label>
+              <input matInput 
+                     type="text" 
+                     formControlName="code" 
+                     autocomplete="one-time-code"
+                     placeholder="000000"
+                     maxlength="6"
+                     inputmode="numeric"
+                     pattern="[0-9]*"
+                     class="otp-input">
+              <mat-icon matPrefix>pin</mat-icon>
+              <mat-error *ngIf="otpForm.get('code')?.hasError('required')">
+                Le code est requis
+              </mat-error>
+              <mat-error *ngIf="otpForm.get('code')?.hasError('minlength') || otpForm.get('code')?.hasError('maxlength')">
+                Le code doit contenir 6 chiffres
+              </mat-error>
+              <mat-error *ngIf="otpForm.get('code')?.hasError('pattern')">
+                Le code ne doit contenir que des chiffres
+              </mat-error>
+            </mat-form-field>
+
+            <div class="otp-info">
+              <mat-icon>schedule</mat-icon>
+              <span>Ce code expire dans 5 minutes</span>
+            </div>
+
+            <button mat-flat-button color="primary" type="submit" class="login-button" [disabled]="loading || !otpForm.valid">
+              <span *ngIf="!loading">Vérifier</span>
+              <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+            </button>
+
+            <button mat-stroked-button type="button" class="back-to-login-btn" (click)="backToLogin()">
+              <mat-icon>arrow_back</mat-icon>
+              <span>Retour à la connexion</span>
+            </button>
+          </form>
+        </ng-container>
       </mat-card>
     </div>
   </div>

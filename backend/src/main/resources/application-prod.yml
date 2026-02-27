@@ -1,14 +1,24 @@
-# Configuration Production - Railway
-# Les variables d'environnement sont injectées par Railway
+# Configuration Production - Compatible Railway, Render, Supabase
+# Les variables d'environnement sont injectées par la plateforme
+
+# Swagger/OpenAPI - DÉSACTIVÉ en production pour la sécurité
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 spring:
   datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME:postgres}
-    password: ${DATABASE_PASSWORD}
+    # Support des deux formats: DATABASE_URL (Railway/Render) ou JDBC_DATABASE_URL
+    # Supabase/Render utilisent: postgres://user:pass@host:port/db
+    # Spring Boot attend: jdbc:postgresql://host:port/db
+    url: ${JDBC_DATABASE_URL:${DATABASE_URL}}
+    username: ${DATABASE_USERNAME:}
+    password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
     hikari:
-      maximum-pool-size: 10
+      maximum-pool-size: ${DB_POOL_SIZE:5}
       minimum-idle: 2
       connection-timeout: 30000
       idle-timeout: 600000

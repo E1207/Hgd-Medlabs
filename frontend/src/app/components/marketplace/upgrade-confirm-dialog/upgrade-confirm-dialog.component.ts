@@ -8,7 +8,7 @@ import { MarketplaceService } from '../../../services/marketplace.service';
 
 export interface UpgradeConfirmDialogData {
   pack: ServicePack;
-  currentPack: ServicePack;
+  currentPack: ServicePack | null;
 }
 
 @Component({

@@ -119,8 +119,21 @@
             </div>
             <div>
               <mat-card-title>Activité Hebdomadaire</mat-card-title>
-              <mat-card-subtitle>Résultats des 7 derniers jours</mat-card-subtitle>
+              <mat-card-subtitle>{{ periodLabel || 'Les 7 derniers jours' }}</mat-card-subtitle>
             </div>
+          </div>
+          <div class="week-navigation">
+            <button mat-icon-button (click)="previousWeek()" matTooltip="Semaine précédente">
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button mat-stroked-button class="current-week-btn" (click)="goToCurrentWeek()" 
+                    *ngIf="weekOffset > 0" matTooltip="Revenir à cette semaine">
+              <mat-icon>today</mat-icon>
+              Aujourd'hui
+            </button>
+            <button mat-icon-button (click)="nextWeek()" [disabled]="!canGoNext" matTooltip="Semaine suivante">
+              <mat-icon>chevron_right</mat-icon>
+            </button>
           </div>
         </mat-card-header>
         <mat-card-content>
@@ -144,8 +157,20 @@
           </div>
           <div>
             <mat-card-title>Évolution du Taux d'Ouverture</mat-card-title>
-            <mat-card-subtitle>Progression sur les 7 derniers jours</mat-card-subtitle>
+            <mat-card-subtitle>{{ periodLabel || 'Les 7 derniers jours' }}</mat-card-subtitle>
           </div>
+        </div>
+        <div class="week-navigation">
+          <button mat-icon-button (click)="previousWeek()" matTooltip="Semaine précédente">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-stroked-button class="current-week-btn" (click)="goToCurrentWeek()" 
+                  *ngIf="weekOffset > 0" matTooltip="Revenir à cette semaine">
+            <mat-icon>today</mat-icon>
+          </button>
+          <button mat-icon-button (click)="nextWeek()" [disabled]="!canGoNext" matTooltip="Semaine suivante">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
         </div>
         <div class="current-rate">
           <span class="rate-value">{{ stats.openRate | number:'1.0-0' }}%</span>

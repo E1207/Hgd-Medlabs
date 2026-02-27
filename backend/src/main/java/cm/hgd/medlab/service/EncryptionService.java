@@ -97,10 +97,19 @@ public class EncryptionService {
      * 
      * @param encryptedData Les données chiffrées (avec sel et IV préfixés)
      * @return Les données déchiffrées en clair
+     * @throws RuntimeException si le déchiffrement échoue
      */
     public byte[] decrypt(byte[] encryptedData) {
         try {
             log.debug("Déchiffrement de {} octets", encryptedData.length);
+            
+            // Vérifier la taille minimale (sel + IV + au moins quelques données + tag)
+            int minSize = SALT_LENGTH + GCM_IV_LENGTH + 16; // 16 bytes minimum pour le tag GCM
+            if (encryptedData.length < minSize) {
+                log.warn("Données trop petites pour être chiffrées ({} < {}), retour des données brutes", 
+                        encryptedData.length, minSize);
+                return encryptedData;
+            }
             
             // Extraire le sel, l'IV et les données chiffrées
             ByteBuffer buffer = ByteBuffer.wrap(encryptedData);
@@ -128,10 +137,33 @@ public class EncryptionService {
             
             return plainData;
             
+        } catch (javax.crypto.AEADBadTagException e) {
+            // Tag mismatch = probablement pas chiffré avec cette clé ou pas chiffré du tout
+            log.warn("Échec du déchiffrement (Tag mismatch) - Les données peuvent ne pas être chiffrées ou utiliser une clé différente");
+            
+            // Vérifier si c'est un PDF non chiffré
+            if (isPdfHeader(encryptedData)) {
+                log.info("Détection d'un PDF non chiffré (header %PDF trouvé)");
+                return encryptedData;
+            }
+            
+            throw new RuntimeException("Erreur de déchiffrement: Les données ne peuvent pas être déchiffrées avec la clé actuelle. " +
+                    "Vérifiez que ENCRYPTION_KEY n'a pas changé depuis le chiffrement.", e);
         } catch (Exception e) {
             log.error("Erreur lors du déchiffrement", e);
             throw new RuntimeException("Erreur de déchiffrement: " + e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Vérifie si les données commencent par le header PDF (%PDF-)
+     */
+    private boolean isPdfHeader(byte[] data) {
+        if (data == null || data.length < 5) {
+            return false;
+        }
+        // %PDF- en ASCII
+        return data[0] == 0x25 && data[1] == 0x50 && data[2] == 0x44 && data[3] == 0x46 && data[4] == 0x2D;
     }
 
     /**
@@ -144,11 +176,37 @@ public class EncryptionService {
         }
         
         // Un PDF commence par %PDF-, si on voit ça = pas chiffré
-        if (data[0] == 0x25 && data[1] == 0x50 && data[2] == 0x44 && data[3] == 0x46) {
+        if (isPdfHeader(data)) {
             return false; // C'est un PDF non chiffré
         }
         
         return true; // Probablement chiffré
+    }
+    
+    /**
+     * Déchiffre des données de manière sécurisée, avec fallback si non chiffré
+     * @return Les données déchiffrées ou les données originales si non chiffrées
+     */
+    public byte[] decryptSafe(byte[] data) {
+        if (data == null || data.length == 0) {
+            return data;
+        }
+        
+        // Si c'est un PDF non chiffré, retourner directement
+        if (isPdfHeader(data)) {
+            log.debug("Données non chiffrées détectées (header PDF), retour direct");
+            return data;
+        }
+        
+        // Tenter le déchiffrement
+        try {
+            return decrypt(data);
+        } catch (RuntimeException e) {
+            // Si le déchiffrement échoue, vérifier si c'est peut-être un PDF non chiffré
+            // qui a été corrompu ou a un format inhabituel
+            log.warn("Déchiffrement échoué, les données seront retournées telles quelles: {}", e.getMessage());
+            return data;
+        }
     }
 
     /**

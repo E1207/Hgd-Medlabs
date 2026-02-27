@@ -36,6 +36,11 @@ export class DashboardComponent implements OnInit {
   displayedColumns = ['referenceDossier', 'patientName', 'status', 'date'];
   today = new Date();
 
+  // Navigation par semaine
+  weekOffset = 0;
+  periodLabel = '';
+  canGoNext = false; // Ne peut pas aller dans le futur
+
   // ===== CHART CONFIGURATIONS =====
   
   // Donut Chart - Distribution des statuts
@@ -204,13 +209,53 @@ export class DashboardComponent implements OnInit {
   }
 
   loadStats(): void {
-    this.resultService.getDashboardStats().subscribe({
+    this.resultService.getDashboardStats(this.weekOffset).subscribe({
       next: (stats) => {
         this.stats = stats;
         this.updateCharts(stats);
+        this.updatePeriodLabel(stats);
+        this.canGoNext = this.weekOffset > 0;
       },
       error: (err) => console.error('Erreur chargement stats', err)
     });
+  }
+
+  // Navigation semaine précédente
+  previousWeek(): void {
+    this.weekOffset++;
+    this.loadStats();
+  }
+
+  // Navigation semaine suivante
+  nextWeek(): void {
+    if (this.weekOffset > 0) {
+      this.weekOffset--;
+      this.loadStats();
+    }
+  }
+
+  // Revenir à la semaine actuelle
+  goToCurrentWeek(): void {
+    this.weekOffset = 0;
+    this.loadStats();
+  }
+
+  // Mettre à jour le label de la période
+  private updatePeriodLabel(stats: DashboardStats): void {
+    if (stats.periodStart && stats.periodEnd) {
+      const startDate = new Date(stats.periodStart);
+      const endDate = new Date(stats.periodEnd);
+      
+      const formatDate = (d: Date) => {
+        return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+      };
+      
+      this.periodLabel = `${formatDate(startDate)} - ${formatDate(endDate)}`;
+      
+      if (this.weekOffset === 0) {
+        this.periodLabel += ' (Cette semaine)';
+      }
+    }
   }
 
   loadRecentResults(): void {

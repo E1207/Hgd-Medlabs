@@ -27,4 +27,13 @@ export interface LoginResponse {
   firstName: string;
   lastName: string;
   role: UserRole;
+  // Champs pour 2FA
+  requires2FA?: boolean;
+  sessionToken?: string;
+}
+
+export interface Verify2FARequest {
+  email: string;
+  code: string;
+  sessionToken: string;
 }

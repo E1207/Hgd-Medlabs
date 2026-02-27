@@ -74,8 +74,10 @@ export class PatientResultService {
     return this.http.post<PdfMetadata>(`${this.apiUrl}/extract-metadata`, formData);
   }
 
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${environment.apiUrl}/dashboard/stats`);
+  getDashboardStats(weekOffset: number = 0): Observable<DashboardStats> {
+    return this.http.get<DashboardStats>(`${environment.apiUrl}/dashboard/stats`, {
+      params: { weekOffset: weekOffset.toString() }
+    });
   }
 
   getRecentResults(limit: number = 10): Observable<PatientResult[]> {

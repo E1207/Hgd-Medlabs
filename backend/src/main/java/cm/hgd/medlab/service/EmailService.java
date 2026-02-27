@@ -97,6 +97,73 @@ public class EmailService {
     }
 
     /**
+     * Envoie le code 2FA par email pour la connexion
+     */
+    @Async
+    public void send2FACode(String toEmail, String userName, String code) {
+        log.info("Envoi du code 2FA à: {}", toEmail);
+
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(fromEmail, fromName);
+            helper.setTo(toEmail);
+            helper.setSubject("Code de vérification - MedLab HGD");
+
+            String htmlContent = get2FACodeTemplate(userName, code);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Code 2FA envoyé avec succès à: {}", toEmail);
+
+        } catch (Exception e) {
+            log.error("Erreur lors de l'envoi du code 2FA à: {}", toEmail, e);
+            throw new RuntimeException("Erreur lors de l'envoi du code 2FA", e);
+        }
+    }
+
+    /**
+     * Template HTML pour le code 2FA
+     */
+    private String get2FACodeTemplate(String userName, String code) {
+        return "<!DOCTYPE html>"
+            + "<html><head><meta charset=\"UTF-8\"><style>"
+            + "body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;}"
+            + ".header{background:linear-gradient(135deg,#6366f1,#4f46e5);color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0;}"
+            + ".content{background:#f9f9f9;padding:30px;border:1px solid #e0e0e0;}"
+            + ".code-box{background:white;padding:30px;text-align:center;border:3px solid #6366f1;border-radius:10px;margin:20px 0;}"
+            + ".code{font-size:36px;font-weight:bold;color:#6366f1;letter-spacing:8px;font-family:'Courier New',monospace;}"
+            + ".footer{text-align:center;padding:20px;font-size:12px;color:#666;border-top:1px solid #e0e0e0;}"
+            + ".warning{background:#fef3c7;border-left:4px solid #f59e0b;padding:15px;margin:20px 0;}"
+            + "</style></head><body>"
+            + "<div class=\"header\">"
+            + "<h1>\uD83D\uDD12 Authentification à 2 facteurs</h1>"
+            + "<p>MedLab - Hôpital Général de Douala</p>"
+            + "</div>"
+            + "<div class=\"content\">"
+            + "<h2>Bonjour " + userName + ",</h2>"
+            + "<p>Une tentative de connexion à votre compte MedLab a été détectée. Veuillez utiliser le code ci-dessous pour confirmer votre identité:</p>"
+            + "<div class=\"code-box\">"
+            + "<p style=\"margin:0 0 10px 0;color:#666;\">Votre code de vérification:</p>"
+            + "<div class=\"code\">" + code + "</div>"
+            + "<p style=\"margin:15px 0 0 0;font-size:12px;color:#666;\">Ce code expire dans 5 minutes</p>"
+            + "</div>"
+            + "<div class=\"warning\">"
+            + "<strong>⚠️ Attention:</strong> Si vous n'avez pas initié cette connexion, quelqu'un essaie peut-être d'accéder à votre compte. Ne partagez jamais ce code avec personne."
+            + "</div>"
+            + "<p style=\"font-size:12px;color:#666;margin-top:20px;\">"
+            + "Adresse IP de connexion: N/A<br>"
+            + "Date et heure: " + java.time.LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) + "</p>"
+            + "</div>"
+            + "<div class=\"footer\">"
+            + "<p><strong>Hôpital Général de Douala</strong></p>"
+            + "<p>MedLab - Système d'Information de Laboratoire</p>"
+            + "<p>Cet email a été généré automatiquement, merci de ne pas y répondre.</p>"
+            + "</div></body></html>";
+    }
+
+    /**
      * Template HTML pour la notification de résultat
      */
     private String getResultNotificationTemplate(Context context) {

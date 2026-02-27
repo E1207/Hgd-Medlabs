@@ -1,0 +1,33 @@
+# Fichiers à ignorer lors du build Docker
+
+# Logs et données locales
+logs/
+*.log
+data/
+target/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Tests
+src/test/
+
+# Fichiers temporaires
+*.tmp
+*.bak
+*.orig
+
+# Fichiers d'environnement
+.env*

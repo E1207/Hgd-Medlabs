@@ -301,27 +301,22 @@ public class PatientResultService {
     /**
      * Récupère le PDF d'un résultat
      * Les PDFs sont stockés CHIFFRÉS en base - ils sont DÉCHIFFRÉS à la lecture
+     * Gère aussi les PDFs legacy non chiffrés
      */
     @Transactional(readOnly = true)
     public byte[] getResultPdf(UUID resultId) throws IOException {
         PatientResult result = patientResultRepository.findById(resultId)
                 .orElseThrow(() -> new RuntimeException("Résultat non trouvé"));
 
-        // Priorité 1: PDF stocké en base de données (chiffré)
+        // Priorité 1: PDF stocké en base de données
         if (result.getPdfContent() != null && result.getPdfContent().length > 0) {
             byte[] storedContent = result.getPdfContent();
             
-            // Vérifier si le contenu est chiffré et déchiffrer
-            if (encryptionService.isEncrypted(storedContent)) {
-                log.debug("PDF chiffré récupéré depuis PostgreSQL, déchiffrement...");
-                byte[] decryptedContent = encryptionService.decrypt(storedContent);
-                log.debug("PDF déchiffré: {} Ko", decryptedContent.length / 1024);
-                return decryptedContent;
-            } else {
-                // Ancien PDF non chiffré (legacy)
-                log.debug("PDF non chiffré (legacy) récupéré depuis PostgreSQL ({} Ko)", storedContent.length / 1024);
-                return storedContent;
-            }
+            // Utiliser decryptSafe qui gère automatiquement les cas chiffrés et non chiffrés
+            log.debug("PDF récupéré depuis PostgreSQL ({} octets)", storedContent.length);
+            byte[] pdfContent = encryptionService.decryptSafe(storedContent);
+            log.debug("PDF prêt: {} Ko", pdfContent.length / 1024);
+            return pdfContent;
         }
         
         // Fallback: lecture depuis le disque (pour les anciens enregistrements)
@@ -408,10 +403,19 @@ public class PatientResultService {
     }
 
     /**
-     * Récupère les statistiques pour le dashboard
+     * Récupère les statistiques pour le dashboard (semaine actuelle)
      */
     @Transactional(readOnly = true)
     public DashboardStatsResponse getDashboardStats() {
+        return getDashboardStats(0);
+    }
+
+    /**
+     * Récupère les statistiques pour le dashboard avec offset de semaine
+     * @param weekOffset 0 = semaine actuelle, 1 = semaine précédente, etc.
+     */
+    @Transactional(readOnly = true)
+    public DashboardStatsResponse getDashboardStats(int weekOffset) {
         LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
         
         Long totalResults = patientResultRepository.count();
@@ -431,8 +435,13 @@ public class PatientResultService {
             statusDistribution.put(status.name(), count);
         }
 
-        // Statistiques hebdomadaires (7 derniers jours)
-        List<DashboardStatsResponse.DailyStats> weeklyStats = calculateWeeklyStats();
+        // Statistiques hebdomadaires avec l'offset de semaine
+        List<DashboardStatsResponse.DailyStats> weeklyStats = calculateWeeklyStats(weekOffset);
+
+        // Calculer les dates de début et fin de la période
+        LocalDate today = LocalDate.now();
+        LocalDate periodEnd = today.minusDays(weekOffset * 7L);
+        LocalDate periodStart = periodEnd.minusDays(6);
 
         return DashboardStatsResponse.builder()
                 .totalResults(totalResults)
@@ -441,20 +450,26 @@ public class PatientResultService {
                 .openRate(openRate)
                 .statusDistribution(statusDistribution)
                 .weeklyStats(weeklyStats)
+                .weekOffset(weekOffset)
+                .periodStart(periodStart.toString())
+                .periodEnd(periodEnd.toString())
                 .build();
     }
 
     /**
-     * Calcule les statistiques pour les 7 derniers jours
+     * Calcule les statistiques pour une semaine donnée
+     * @param weekOffset 0 = semaine actuelle, 1 = semaine précédente, etc.
      */
-    private List<DashboardStatsResponse.DailyStats> calculateWeeklyStats() {
+    private List<DashboardStatsResponse.DailyStats> calculateWeeklyStats(int weekOffset) {
         List<DashboardStatsResponse.DailyStats> stats = new ArrayList<>();
         String[] dayNames = {"Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"};
         
         LocalDate today = LocalDate.now();
+        // Décaler de weekOffset semaines (7 jours par semaine)
+        LocalDate referenceDate = today.minusDays(weekOffset * 7L);
         
         for (int i = 6; i >= 0; i--) {
-            LocalDate date = today.minusDays(i);
+            LocalDate date = referenceDate.minusDays(i);
             LocalDateTime startOfDay = date.atStartOfDay();
             LocalDateTime endOfDay = date.plusDays(1).atStartOfDay();
             

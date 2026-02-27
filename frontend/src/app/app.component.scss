@@ -4,16 +4,16 @@
   flex-direction: column;
   height: 100vh;
   background: #f8fafc;
-  // Éviter de créer un contexte de stacking qui perturbe les overlays
-  transform: none;
-  contain: none;
+  // IMPORTANT: Ne pas mettre transform ici car ça crée un contexte de stacking
+  // qui perturbe le positionnement des overlays (mat-menu, mat-select)
 }
 
 // ===== MODERN HEADER =====
 .app-header {
   position: sticky;
   top: 0;
-  z-index: 1000;
+  // z-index plus bas que les overlays (1050) pour ne pas les bloquer
+  z-index: 100;
   height: 64px;
   background: var(--brand-header-bg, #ffffff);
   border-bottom: 1px solid #e5e7eb;
@@ -378,6 +378,66 @@
     &.active .nav-icon {
       background: linear-gradient(135deg, #ec4899 0%, #db2777 100%);
       box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+      
+      mat-icon {
+        color: white;
+      }
+    }
+  }
+
+  &.analytics-item {
+    .nav-icon {
+      background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+      
+      mat-icon {
+        color: #ea580c;
+      }
+    }
+
+    &:hover .nav-icon,
+    &.active .nav-icon {
+      background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+      box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+      
+      mat-icon {
+        color: white;
+      }
+    }
+  }
+
+  &.audit-item {
+    .nav-icon {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      
+      mat-icon {
+        color: #475569;
+      }
+    }
+
+    &:hover .nav-icon,
+    &.active .nav-icon {
+      background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+      box-shadow: 0 2px 8px rgba(100, 116, 139, 0.3);
+      
+      mat-icon {
+        color: white;
+      }
+    }
+  }
+
+  &.security-item {
+    .nav-icon {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      
+      mat-icon {
+        color: #dc2626;
+      }
+    }
+
+    &:hover .nav-icon,
+    &.active .nav-icon {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
       
       mat-icon {
         color: white;

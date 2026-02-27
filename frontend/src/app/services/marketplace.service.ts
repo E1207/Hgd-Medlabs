@@ -487,6 +487,21 @@ export class MarketplaceService {
     return this.isAddonActive('addon-custom-branding');
   }
 
+  // Vérifier si Analytics Pro est actif
+  isAnalyticsProActive(): boolean {
+    return this.isAddonActive('addon-analytics-pro');
+  }
+
+  // Vérifier si Audit Trail est actif
+  isAuditTrailActive(): boolean {
+    return this.isAddonActive('addon-audit-trail');
+  }
+
+  // Vérifier si le 2FA est actif
+  is2FAActive(): boolean {
+    return this.isAddonActive('addon-2fa');
+  }
+
   // Packs
   getPacks(serviceId: string): Observable<ServicePack[]> {
     // Mock - remplacer par: return this.http.get<ServicePack[]>(`${this.apiUrl}/packs?serviceId=${serviceId}`);
@@ -601,6 +616,11 @@ export class MarketplaceService {
       if (addon.billingType === 'MONTHLY') {
         this.currentSubscription.totalMonthlyPrice += addon.price;
       }
+      
+      // Si c'est le 2FA, activer côté backend
+      if (addonId === 'addon-2fa') {
+        this.http.post(`${environment.apiUrl}/auth/2fa/enable-global`, {}).subscribe();
+      }
     }
     this.saveSubscriptionToStorage();
     return this.getCurrentSubscription();
@@ -613,6 +633,11 @@ export class MarketplaceService {
       this.currentSubscription.addons.splice(index, 1);
       if (addon && addon.billingType === 'MONTHLY') {
         this.currentSubscription.totalMonthlyPrice -= addon.price;
+      }
+      
+      // Si c'est le 2FA, désactiver côté backend
+      if (addonId === 'addon-2fa') {
+        this.http.post(`${environment.apiUrl}/auth/2fa/disable-global`, {}).subscribe();
       }
     }
     this.saveSubscriptionToStorage();

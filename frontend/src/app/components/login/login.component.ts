@@ -39,8 +39,15 @@ interface ServiceConfig {
 })
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
+  otpForm: FormGroup;
   loading = false;
   hidePassword = true;
+  
+  // 2FA state
+  requires2FA = false;
+  sessionToken = '';
+  userEmail = '';
+  userName = '';
   
   // Service configuration
   currentService = 'medlabs';
@@ -108,6 +115,9 @@ export class LoginComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
     });
+    this.otpForm = this.fb.group({
+      code: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(6), Validators.pattern('^[0-9]*$')]]
+    });
   }
 
   ngOnInit(): void {
@@ -137,8 +147,23 @@ export class LoginComponent implements OnInit {
     if (this.loginForm.valid) {
       this.loading = true;
       this.authService.login(this.loginForm.value).subscribe({
-        next: () => {
-          this.router.navigateByUrl(this.returnUrl);
+        next: (response) => {
+          // Vérifier si le 2FA est requis
+          if (response.requires2FA) {
+            this.requires2FA = true;
+            this.sessionToken = response.sessionToken || '';
+            this.userEmail = response.email;
+            this.userName = response.firstName || '';
+            this.loading = false;
+            this.snackBar.open(
+              'Un code de vérification a été envoyé à votre email',
+              'OK',
+              { duration: 5000 }
+            );
+          } else {
+            // Connexion réussie sans 2FA
+            this.router.navigateByUrl(this.returnUrl);
+          }
         },
         error: (error) => {
           this.loading = false;
@@ -150,6 +175,37 @@ export class LoginComponent implements OnInit {
         }
       });
     }
+  }
+
+  onVerify2FA(): void {
+    if (this.otpForm.valid) {
+      this.loading = true;
+      this.authService.verify2FA({
+        email: this.userEmail,
+        code: this.otpForm.value.code,
+        sessionToken: this.sessionToken
+      }).subscribe({
+        next: () => {
+          this.router.navigateByUrl(this.returnUrl);
+        },
+        error: (error) => {
+          this.loading = false;
+          this.snackBar.open(
+            error.error?.message || 'Code de vérification invalide ou expiré',
+            'Fermer',
+            { duration: 5000 }
+          );
+        }
+      });
+    }
+  }
+
+  backToLogin(): void {
+    this.requires2FA = false;
+    this.sessionToken = '';
+    this.userEmail = '';
+    this.userName = '';
+    this.otpForm.reset();
   }
 
   goToHome(): void {

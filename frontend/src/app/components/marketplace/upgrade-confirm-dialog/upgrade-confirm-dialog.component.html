@@ -8,12 +8,12 @@
 
   <mat-dialog-content>
     <div class="upgrade-comparison">
-      <div class="pack-box current">
-        <div class="pack-icon" [style.background]="data.currentPack?.color">
-          <mat-icon>{{ data.currentPack?.icon }}</mat-icon>
+      <div class="pack-box current" *ngIf="data.currentPack">
+        <div class="pack-icon" [style.background]="data.currentPack.color">
+          <mat-icon>{{ data.currentPack.icon }}</mat-icon>
         </div>
-        <span class="pack-name">{{ data.currentPack?.name }}</span>
-        <span class="pack-price">{{ formatPrice(data.currentPack?.price || 0) }}/mois</span>
+        <span class="pack-name">{{ data.currentPack.name }}</span>
+        <span class="pack-price">{{ formatPrice(data.currentPack.price) }}/mois</span>
       </div>
 
       <div class="arrow">

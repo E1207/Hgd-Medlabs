@@ -69,6 +69,24 @@ export const routes: Routes = [
         loadComponent: () => import('./components/branding/branding-management.component').then(m => m.BrandingManagementComponent),
         canActivate: [authGuard],
         data: { service: 'medlabs', adminOnly: true }
+      },
+      {
+        path: 'analytics',
+        loadComponent: () => import('./components/analytics/analytics.component').then(m => m.AnalyticsComponent),
+        canActivate: [authGuard],
+        data: { service: 'medlabs' }
+      },
+      {
+        path: 'audit',
+        loadComponent: () => import('./components/audit/audit-trail.component').then(m => m.AuditTrailComponent),
+        canActivate: [authGuard],
+        data: { service: 'medlabs', adminOnly: true }
+      },
+      {
+        path: 'security',
+        loadComponent: () => import('./components/security/security-settings.component').then(m => m.SecuritySettingsComponent),
+        canActivate: [authGuard],
+        data: { service: 'medlabs', adminOnly: true }
       }
     ]
   },

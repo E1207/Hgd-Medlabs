@@ -24,8 +24,10 @@ public class DashboardController {
 
     @GetMapping("/stats")
     @Operation(summary = "Statistiques globales", description = "Récupère les KPIs et statistiques pour le dashboard")
-    public ResponseEntity<DashboardStatsResponse> getStats() {
-        DashboardStatsResponse stats = patientResultService.getDashboardStats();
+    public ResponseEntity<DashboardStatsResponse> getStats(
+            @RequestParam(defaultValue = "0") int weekOffset
+    ) {
+        DashboardStatsResponse stats = patientResultService.getDashboardStats(weekOffset);
         return ResponseEntity.ok(stats);
     }
 

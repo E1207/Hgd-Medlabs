@@ -1,0 +1,24 @@
+# Configuration Railway pour MedLab HGD
+# https://docs.railway.app/develop/services
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "backend/Dockerfile.prod"
+
+[deploy]
+healthcheckPath = "/actuator/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 5
+
+[[services]]
+name = "medlab-backend"
+internalPort = 8080
+protocol = "http"
+
+[[services]]
+name = "medlab-frontend"
+buildCommand = "cd frontend && npm install && npm run build"
+startCommand = "npx serve frontend/dist/medlab-app/browser -l 3000"
+internalPort = 3000
+protocol = "http"

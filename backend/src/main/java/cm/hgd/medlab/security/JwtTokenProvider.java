@@ -1,10 +1,16 @@
 package cm.hgd.medlab.security;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -17,8 +23,10 @@ import java.util.function.Function;
 
 /**
  * Service pour générer et valider les tokens JWT
+ * Sécurisé avec gestion complète des erreurs
  */
 @Component
+@Slf4j
 public class JwtTokenProvider {
 
     @Value("${medlab.security.jwt-secret}")
@@ -28,10 +36,15 @@ public class JwtTokenProvider {
     private long jwtExpiration;
 
     /**
-     * Extrait le username (email) du token
+     * Extrait le username (email) du token de manière sécurisée
      */
     public String extractUsername(String token) {
-        return extractClaim(token, Claims::getSubject);
+        try {
+            return extractClaim(token, Claims::getSubject);
+        } catch (JwtException e) {
+            log.warn("Impossible d'extraire le username du token: {}", e.getMessage());
+            return null;
+        }
     }
 
     /**
@@ -63,18 +76,42 @@ public class JwtTokenProvider {
     }
 
     /**
-     * Valide un token JWT
+     * Valide un token JWT de manière sécurisée
      */
     public boolean isTokenValid(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername())) && !isTokenExpired(token);
+        try {
+            final String username = extractUsername(token);
+            if (username == null) {
+                return false;
+            }
+            return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
+        } catch (ExpiredJwtException e) {
+            log.debug("Token expiré pour l'utilisateur: {}", userDetails.getUsername());
+            return false;
+        } catch (SignatureException e) {
+            log.warn("Signature JWT invalide - tentative de falsification détectée");
+            return false;
+        } catch (MalformedJwtException e) {
+            log.warn("Token JWT malformé");
+            return false;
+        } catch (UnsupportedJwtException e) {
+            log.warn("Token JWT non supporté");
+            return false;
+        } catch (Exception e) {
+            log.error("Erreur lors de la validation du token: {}", e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Vérifie si le token est expiré
      */
     private boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
+        try {
+            return extractExpiration(token).before(new Date());
+        } catch (ExpiredJwtException e) {
+            return true;
+        }
     }
 
     /**

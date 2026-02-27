@@ -300,6 +300,93 @@
   }
 }
 
+// ===== 2FA VERIFICATION =====
+.twofa-header {
+  text-align: center;
+
+  .twofa-icon {
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+
+    mat-icon {
+      font-size: 36px;
+      width: 36px;
+      height: 36px;
+      color: white;
+    }
+  }
+
+  p {
+    color: #64748b;
+    
+    strong {
+      color: #334155;
+    }
+  }
+}
+
+.otp-field {
+  .otp-input {
+    font-size: 28px !important;
+    letter-spacing: 8px;
+    text-align: center;
+    font-family: 'JetBrains Mono', 'Courier New', monospace;
+    font-weight: 600;
+    color: #1e293b;
+  }
+}
+
+.otp-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 12px;
+  background: #fef3c7;
+  border-radius: 10px;
+  color: #92400e;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #d97706;
+  }
+
+  span {
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+.back-to-login-btn {
+  width: 100%;
+  margin-top: 12px;
+  border-color: #cbd5e1;
+  color: #64748b;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+  }
+
+  &:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #475569;
+  }
+}
+
 // ===== RESPONSIVE =====
 @media (max-width: 900px) {
   .login-content {

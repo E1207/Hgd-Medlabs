@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { Router } from '@angular/router';
-import { LoginRequest, LoginResponse, User } from '../models/user.model';
+import { LoginRequest, LoginResponse, User, Verify2FARequest } from '../models/user.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -23,6 +23,11 @@ export class AuthService {
     return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/login`, credentials)
       .pipe(
         tap(response => {
+          // Si 2FA requis, ne pas stocker le token
+          if (response.requires2FA) {
+            return;
+          }
+          // Connexion normale
           this.setToken(response.token);
           const user: User = {
             id: response.userId,
@@ -37,6 +42,38 @@ export class AuthService {
           this.currentUserSubject.next(user);
         })
       );
+  }
+
+  verify2FA(request: Verify2FARequest): Observable<LoginResponse> {
+    return this.http.post<LoginResponse>(`${environment.apiUrl}/auth/verify-2fa`, request)
+      .pipe(
+        tap(response => {
+          this.setToken(response.token);
+          const user: User = {
+            id: response.userId,
+            email: response.email,
+            firstName: response.firstName,
+            lastName: response.lastName,
+            role: response.role,
+            isActive: true,
+            createdAt: new Date()
+          };
+          this.setUser(user);
+          this.currentUserSubject.next(user);
+        })
+      );
+  }
+
+  enable2FAGlobal(): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/2fa/enable-global`, {});
+  }
+
+  disable2FAGlobal(): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/2fa/disable-global`, {});
+  }
+
+  get2FAStatus(): Observable<{ globalEnabled: boolean; enabledUsers: string[] }> {
+    return this.http.get<{ globalEnabled: boolean; enabledUsers: string[] }>(`${environment.apiUrl}/auth/2fa/status`);
   }
 
   logout(): void {
