@@ -81,6 +81,11 @@ medlab:
     from: ${EMAIL_FROM:}
     from-name: MedLab - HGD
     base-url: ${BASE_URL:http://localhost:4200}
+    # Configuration Resend (API HTTP - Alternative à SMTP)
+    # En local, on utilise SMTP donc Resend est désactivé par défaut
+    resend:
+      enabled: ${RESEND_ENABLED:false}
+      api-key: ${RESEND_API_KEY:}
   
   # Configuration WhatsApp Business API (Meta Cloud)
   # IMPORTANT: Les credentials doivent être dans les variables d'environnement !

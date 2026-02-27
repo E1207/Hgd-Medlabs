@@ -43,7 +43,7 @@ public class PatientResultService {
     private final PatientResultRepository patientResultRepository;
     private final AccessLogRepository accessLogRepository;
     private final FileService fileService;
-    private final EmailService emailService;
+    private final EmailRoutingService emailService;
     private final AuthService authService;
     private final PasswordEncoder passwordEncoder;
     private final EncryptionService encryptionService;

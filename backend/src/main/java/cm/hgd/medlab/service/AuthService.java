@@ -26,7 +26,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final OtpService otpService;
-    private final EmailService emailService;
+    private final EmailRoutingService emailService;
     private final TwoFactorStatusService twoFactorStatusService;
 
     /**

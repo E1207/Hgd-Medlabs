@@ -69,6 +69,11 @@ medlab:
     from: ${EMAIL_FROM:noreply@medlab-hgd.cm}
     from-name: MedLab - HGD
     base-url: ${FRONTEND_URL:https://medlab-frontend.railway.app}
+    # Configuration Resend (API HTTP - Alternative à SMTP pour les plateformes cloud)
+    # Resend offre 3000 emails/mois gratuits: https://resend.com
+    resend:
+      enabled: ${RESEND_ENABLED:false}
+      api-key: ${RESEND_API_KEY:}
   
   # Configuration WhatsApp Business API (Meta Cloud)
   # Désactivé par défaut en prod si non configuré
