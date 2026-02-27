@@ -36,13 +36,10 @@ public class ResendEmailService {
     @Value("${medlab.email.resend.enabled:false}")
     private boolean resendEnabled;
     
-    @Value("${medlab.email.from}")
-    private String fromEmail;
+    @Value("${medlab.email.resend.from:${EMAIL_FROM:MedLab HGD <onboarding@resend.dev>}}")
+    private String resendFrom;
 
-    @Value("${medlab.email.from-name}")
-    private String fromName;
-
-    @Value("${medlab.email.base-url}")
+    @Value("${medlab.email.base-url:${FRONTEND_URL:https://medlab-ss.onrender.com}}")
     private String baseUrl;
     
     private final HttpClient httpClient;
@@ -73,7 +70,7 @@ public class ResendEmailService {
         
         try {
             Map<String, Object> emailData = new HashMap<>();
-            emailData.put("from", fromName + " <" + fromEmail + ">");
+            emailData.put("from", resendFrom);
             emailData.put("to", List.of(to));
             emailData.put("subject", subject);
             emailData.put("html", htmlContent);
